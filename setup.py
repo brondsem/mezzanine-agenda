@@ -9,10 +9,12 @@ def get_long_desc():
     except:
         print("WARNING: The long readme wasn't converted properly")
 
+long_desc = get_long_desc()
+
 setup(name='mezzanine-agenda',
     version=__version__,
     description='Events for the Mezzanine CMS',
-    long_description=get_long_desc(),
+    long_description=long_desc.encode(),
     author='James Pells',
     author_email='jimmy@jamespells.com',
     url='https://github.com/jpells/mezzanine-agenda',
