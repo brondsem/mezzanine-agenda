@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from geopy.geocoders import GoogleV3 as GoogleMaps
-from geopy.geocoders.googlev3 import GQueryError
+from geopy.exc import GeocoderQueryError
 
 from icalendar import Event as IEvent
 
@@ -136,7 +136,7 @@ class EventLocation(Slugged):
             g = GoogleMaps(domain=settings.EVENT_GOOGLE_MAPS_DOMAIN)
             try:
                 mappable_location, (lat, lon) = g.geocode(self.mappable_location.encode('utf-8'))
-            except GQueryError as e:
+            except GeocoderQueryError as e:
                 raise ValidationError("The mappable location you specified could not be found on {service}: \"{error}\" Try changing the mappable location, removing any business names, or leaving mappable location blank and using coordinates from getlatlon.com.".format(service="Google Maps", error=e.message))
             except ValueError as e:
                 raise ValidationError("The mappable location you specified could not be found on {service}: \"{error}\" Try changing the mappable location, removing any business names, or leaving mappable location blank and using coordinates from getlatlon.com.".format(service="Google Maps", error=e.message))
