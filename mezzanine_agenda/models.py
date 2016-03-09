@@ -37,8 +37,7 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"), default=False)
     comments = CommentsField(verbose_name=_("Comments"))
     rating = RatingField(verbose_name=_("Rating"))
-    featured_image = FileField(verbose_name=_("Featured Image"),
-        upload_to=upload_to("mezzanine_agenda.Event.featured_image", "event"),
+    featured_image = FileField(verbose_name=_("Featured Image"), upload_to='images/events/',
         format="Image", max_length=255, null=True, blank=True)
     featured_image_header = FileField(_('featured image header'),
         upload_to='images/events/headers', max_length=1024, blank=True, format="Image")
@@ -61,6 +60,18 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
 
         if self.end and self.start > self.end:
             raise ValidationError("Start must be sooner than end.")
+
+    def save(self):
+        if self.parent:
+            self.title = self.parent.title
+            self.user = self.parent.user
+            self.status = self.parent.status
+            self.content = self.parent.content
+            self.location = self.parent.location
+            self.featured_image = self.parent.featured_image
+            self.featured_image_header = self.parent.featured_image_header
+        super(Event, self).save()
+
 
     def get_absolute_url(self):
         """
