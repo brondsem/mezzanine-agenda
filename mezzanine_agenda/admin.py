@@ -5,22 +5,15 @@ from copy import deepcopy
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from mezzanine_agenda.models import Event, EventLocation
+from mezzanine_agenda.models import Event, EventLocation, EventCategory
 from mezzanine.conf import settings
 from mezzanine.core.admin import DisplayableAdmin, OwnableAdmin
 
 
-event_fieldsets = deepcopy(DisplayableAdmin.fieldsets)
-event_fieldsets[0][1]["fields"].insert(1, ("start", "end"))
-event_fieldsets[0][1]["fields"].insert(2, "location")
-event_fieldsets[0][1]["fields"].insert(3, "facebook_event")
-event_fieldsets[0][1]["fields"].extend(["content", "allow_comments"])
-event_list_display = ["title", "user", "status", "admin_link"]
-if settings.EVENT_USE_FEATURED_IMAGE:
-    event_fieldsets[0][1]["fields"].insert(-2, "featured_image")
-    event_list_display.insert(0, "admin_thumb")
-event_fieldsets = list(event_fieldsets)
-event_list_filter = deepcopy(DisplayableAdmin.list_filter) + ("location",)
+
+class EventAdminBase(admin.ModelAdmin):
+
+    model = Event
 
 
 class EventAdmin(DisplayableAdmin, OwnableAdmin):
@@ -28,9 +21,11 @@ class EventAdmin(DisplayableAdmin, OwnableAdmin):
     Admin class for events.
     """
 
-    fieldsets = event_fieldsets
-    list_display = event_list_display
-    list_filter = event_list_filter
+    fieldsets = deepcopy(EventAdminBase.fieldsets)
+    list_display = ["title", "user", "status", "admin_link"]
+    if settings.EVENT_USE_FEATURED_IMAGE:
+        list_display.insert(0, "admin_thumb")
+    list_filter = deepcopy(DisplayableAdmin.list_filter) + ("location",)
 
     def save_form(self, request, form, change):
         """
@@ -58,5 +53,11 @@ class EventLocationAdmin(admin.ModelAdmin):
         return False
 
 
+class EventCategoryAdmin(admin.ModelAdmin):
+
+    model = EventCategory
+
+
 admin.site.register(Event, EventAdmin)
 admin.site.register(EventLocation, EventLocationAdmin)
+admin.site.register(EventCategory, EventCategoryAdmin)

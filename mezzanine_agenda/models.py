@@ -25,17 +25,26 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
     A event.
     """
 
+    parent = models.ForeignKey('Event', verbose_name=_('parent'),
+        related_name='children', blank=True, null=True,
+        on_delete=models.SET_NULL)
+    category = models.ForeignKey('EventCategory', related_name='events',
+        verbose_name=_('category'), blank=True, null=True, on_delete=models.SET_NULL)
     start = models.DateTimeField(_("Start"))
     end = models.DateTimeField(_("End"), blank=True, null=True)
     location = models.ForeignKey("EventLocation", blank=True, null=True)
-    facebook_event = models.BigIntegerField(_('Facebook'), blank=True, null=True) #
-    allow_comments = models.BooleanField(verbose_name=_("Allow comments"),
-                                         default=True)
+    facebook_event = models.BigIntegerField(_('Facebook'), blank=True, null=True)
+    allow_comments = models.BooleanField(verbose_name=_("Allow comments"), default=False)
     comments = CommentsField(verbose_name=_("Comments"))
     rating = RatingField(verbose_name=_("Rating"))
     featured_image = FileField(verbose_name=_("Featured Image"),
         upload_to=upload_to("mezzanine_agenda.Event.featured_image", "event"),
         format="Image", max_length=255, null=True, blank=True)
+    featured_image_header = FileField(_('featured image header'),
+        upload_to='images/events/headers', max_length=1024, blank=True, format="Image")
+    featured_image_description = models.TextField(_('featured image description'), blank=True)
+    featured = models.BooleanField(_('featured'), default=False)
+    external_id = models.IntegerField(_('external_id'), null=True, blank=True)
 
     admin_thumb_field = "featured_image"
 
@@ -147,3 +156,17 @@ class EventLocation(Slugged):
     @models.permalink
     def get_absolute_url(self):
         return ("event_list_location", (), {"location": self.slug})
+
+
+class EventCategory(models.Model):
+    """Event Category"""
+
+    name = models.CharField(_('name'), max_length=512)
+    description = models.TextField(_('description'), blank=True)
+
+    class Meta:
+        verbose_name = _("Event category")
+        verbose_name_plural = _("Event categories")
+
+    def __unicode__(self):
+        return self.name
