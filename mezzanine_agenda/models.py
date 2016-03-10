@@ -150,12 +150,12 @@ class EventLocation(Slugged):
             raise ValidationError("Latitude required if specifying longitude.")
 
         if not (self.lat and self.lon) and not self.mappable_location:
-            self.mappable_location = self.address.replace("\n",", ")
+            self.mappable_location = self.address.replace("\n",", ").replace('\r', '')
 
         if self.mappable_location and not (self.lat and self.lon): #location should always override lat/long if set
             g = GoogleMaps(domain=settings.EVENT_GOOGLE_MAPS_DOMAIN)
             try:
-                mappable_location, (lat, lon) = g.geocode(self.mappable_location.encode('utf-8'))
+                mappable_location, (lat, lon) = g.geocode(self.mappable_location)
             except GeocoderQueryError as e:
                 raise ValidationError("The mappable location you specified could not be found on {service}: \"{error}\" Try changing the mappable location, removing any business names, or leaving mappable location blank and using coordinates from getlatlon.com.".format(service="Google Maps", error=e.message))
             except ValueError as e:
