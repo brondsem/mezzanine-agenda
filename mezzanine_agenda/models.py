@@ -67,7 +67,8 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
             self.user = self.parent.user
             self.status = self.parent.status
             self.content = self.parent.content
-            self.location = self.parent.location
+            if not self.location:
+                self.location = self.parent.location
             self.featured_image = self.parent.featured_image
             self.featured_image_header = self.parent.featured_image_header
         super(Event, self).save()
@@ -150,7 +151,7 @@ class EventLocation(Slugged):
             raise ValidationError("Latitude required if specifying longitude.")
 
         if not (self.lat and self.lon) and not self.mappable_location:
-            self.mappable_location = self.address.replace("\n",", ").replace('\r', '')
+            self.mappable_location = self.address.replace("\n"," ").replace('\r', ' ')
 
         if self.mappable_location and not (self.lat and self.lon): #location should always override lat/long if set
             g = GoogleMaps(domain=settings.EVENT_GOOGLE_MAPS_DOMAIN)
@@ -163,6 +164,10 @@ class EventLocation(Slugged):
             self.mappable_location = mappable_location
             self.lat = lat
             self.lon = lon
+
+    def save(self):
+        self.clean()
+        super(EventLocation, self).save()
 
     @models.permalink
     def get_absolute_url(self):
