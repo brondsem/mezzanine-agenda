@@ -32,7 +32,7 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
         verbose_name=_('category'), blank=True, null=True, on_delete=models.SET_NULL)
     start = models.DateTimeField(_("Start"))
     end = models.DateTimeField(_("End"), blank=True, null=True)
-    location = models.ForeignKey("EventLocation", blank=True, null=True)
+    location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
     facebook_event = models.BigIntegerField(_('Facebook'), blank=True, null=True)
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"), default=False)
     comments = CommentsField(verbose_name=_("Comments"))
