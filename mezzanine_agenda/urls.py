@@ -53,7 +53,9 @@ urlpatterns = [
         icalendar_event, name="icalendar_event_year"),
     url("^(?P<slug>.*)/event.ics$", icalendar_event, name="icalendar_event"),
     url("^calendar.ics$", icalendar, name="icalendar"),
-    url("^(?P<slug>.*)%s$" % _slash, event_detail,
+    url("^(?P<slug>.*)/detail%s$" % _slash, event_detail,
         name="event_detail"),
+    url("^(?P<slug>.*)/booking%s$" % _slash, event_booking,
+        name="event_booking"),
     url("^$", event_list, name="event_list"),
 ]

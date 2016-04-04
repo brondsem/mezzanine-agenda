@@ -86,6 +86,20 @@ def event_detail(request, slug, year=None, month=None, day=None,
     return render(request, templates, context)
 
 
+def event_booking(request, slug, year=None, month=None, day=None,
+                     template="agenda/event_booking.html"):
+    """. Custom templates are checked for using the name
+    ``agenda/event_detail_XXX.html`` where ``XXX`` is the agenda
+    events's slug.
+    """
+    events = Event.objects.published(
+                                     for_user=request.user).select_related()
+    event = get_object_or_404(events, slug=slug)
+    context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL}
+    templates = [u"agenda/event_detail_%s.html" % str(slug), template]
+    return render(request, templates, context)
+
+
 def event_feed(request, format, **kwargs):
     """
     Events feeds - maps format to the correct feed view.
