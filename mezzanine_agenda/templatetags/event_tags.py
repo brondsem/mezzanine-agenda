@@ -241,3 +241,14 @@ def icalendar_url(context):
             return reverse("icalendar_author", args=(context["author"],))
         else:
             return reverse("icalendar")
+
+@register.as_tag
+def all_events(*args):
+    return Event.objects.all()
+
+@register.as_tag
+def all_days(*args):
+    events = Event.objects.all().order_by('start')
+    lower = events[0]
+    higher = events[1]
+    return Event.objects.all()
