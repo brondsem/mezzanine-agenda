@@ -58,5 +58,6 @@ urlpatterns = [
     url("^(?P<slug>.*)/booking%s$" % _slash, event_booking,
         name="event_booking"),
     url("^$", event_list, name="event_list"),
+    url("^archive/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})%s$" % _slash,
+        event_list, name="event_list_day"),
 ]
- 

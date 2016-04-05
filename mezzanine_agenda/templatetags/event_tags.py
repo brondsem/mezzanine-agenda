@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-from datetime import datetime
 
 from django import template
 from django.contrib.sites.models import Site
@@ -21,6 +20,7 @@ from mezzanine.utils.sites import current_site_id
 import pytz
 
 from time import strptime
+from datetime import date, datetime, timedelta
 
 User = get_user_model()
 
@@ -246,9 +246,20 @@ def icalendar_url(context):
 def all_events(*args):
     return Event.objects.all()
 
+def perdelta(start, end, delta):
+    curr = start
+    while curr < end:
+        yield curr
+        curr += delta
+
 @register.as_tag
 def all_days(*args):
     events = Event.objects.all().order_by('start')
-    lower = events[0]
-    higher = events[1]
-    return Event.objects.all()
+    lower = events[0].start
+    higher = events.latest('start').start
+    date_list = [d for d in perdelta(lower, higher, timedelta(days=1))]
+    return date_list
+
+@register.filter
+def events_in_day(date):
+    return Event.objects.filter(start__date=date)
