@@ -59,3 +59,4 @@ urlpatterns = [
         name="event_booking"),
     url("^$", event_list, name="event_list"),
 ]
+ 

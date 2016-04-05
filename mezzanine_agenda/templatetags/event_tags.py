@@ -188,22 +188,32 @@ def google_calendar_url(event):
 
 
 @register.filter(is_safe=True)
-def google_nav_url(event):
+def google_nav_url(obj):
     """
-    Generates a link to get directions to an event with google maps.
+    Generates a link to get directions to an event or location with google maps.
     """
-    if not isinstance(event, Event):
+    if isinstance(obj, Event):
+        location = quote(obj.location.mappable_location)
+    elif isinstance(obj, EventLocation):
+        location = quote(obj.mappable_location)
+    else:
         return ''
-    location = quote(event.location.mappable_location)
     return "https://{}/maps?daddr={}".format(settings.EVENT_GOOGLE_MAPS_DOMAIN, location)
 
 
 @register.simple_tag
-def google_static_map(event, width, height, zoom):
+def google_static_map(obj, width, height, zoom):
     """
     Generates a static google map for the event location.
     """
-    marker = quote('{:.6},{:.6}'.format(event.location.lat, event.location.lon))
+    if isinstance(obj, Event):
+        location = quote(obj.location.mappable_location)
+        marker = quote('{:.6},{:.6}'.format(obj.location.lat, obj.location.lon))
+    elif isinstance(obj, EventLocation):
+        location = quote(obj.mappable_location)
+        marker = quote('{:.6},{:.6}'.format(obj.lat, obj.lon))
+    else:
+        return ''
     if settings.EVENT_HIDPI_STATIC_MAPS:
         scale = 2
     else:
