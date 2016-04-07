@@ -42,7 +42,6 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
     featured_image_header = FileField(_('featured image header'),
         upload_to='images/events/headers', max_length=1024, blank=True, format="Image")
     featured_image_description = models.TextField(_('featured image description'), blank=True)
-    featured = models.BooleanField(_('featured'), default=False)
     external_id = models.IntegerField(_('external_id'), null=True, blank=True)
 
     admin_thumb_field = "featured_image"
@@ -183,6 +182,6 @@ class EventCategory(models.Model):
     class Meta:
         verbose_name = _("Event category")
         verbose_name_plural = _("Event categories")
-
-    def __unicode__(self):
+        
+    def __str__(self):
         return self.name
