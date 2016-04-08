@@ -49,7 +49,7 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
     class Meta:
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
-        ordering = ("-start",)
+        ordering = ("start",)
 
     def clean(self):
         """
@@ -182,6 +182,6 @@ class EventCategory(models.Model):
     class Meta:
         verbose_name = _("Event category")
         verbose_name_plural = _("Event categories")
-        
+
     def __str__(self):
         return self.name
