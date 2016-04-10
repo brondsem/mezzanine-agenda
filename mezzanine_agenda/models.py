@@ -136,6 +136,7 @@ class EventLocation(Slugged):
     featured_name = models.CharField(_('fearured name'), max_length=512, blank=True, null=True)
     description = RichTextField(_('description'), blank=True)
     link = models.URLField(max_length=512, blank=True, null=True)
+    external_id = models.IntegerField(_('external_id'), null=True, blank=True)
 
     class Meta:
         verbose_name = _("Event Location")
@@ -202,5 +203,5 @@ class EventPrice(models.Model):
         verbose_name = _("Event price")
         verbose_name_plural = _("Event pricies")
 
-    def __unicode__(self):
-        return str(value)
+    def __str__(self):
+        return str(self.price)
