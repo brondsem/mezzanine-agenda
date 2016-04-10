@@ -13,7 +13,7 @@ from geopy.exc import GeocoderQueryError
 from icalendar import Event as IEvent
 
 from mezzanine.conf import settings
-from mezzanine.core.fields import FileField
+from mezzanine.core.fields import FileField, RichTextField, OrderField
 from mezzanine.core.models import Displayable, Ownable, RichText, Slugged
 from mezzanine.generic.fields import CommentsField, RatingField
 from mezzanine.utils.models import AdminThumbMixin, upload_to
@@ -43,6 +43,8 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
         upload_to='images/events/headers', max_length=1024, blank=True, format="Image")
     featured_image_description = models.TextField(_('featured image description'), blank=True)
     external_id = models.IntegerField(_('external_id'), null=True, blank=True)
+    prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'),
+        related_name='events', blank=True)
 
     admin_thumb_field = "featured_image"
 
@@ -131,6 +133,9 @@ class EventLocation(Slugged):
     mappable_location = models.CharField(max_length=128, blank=True, help_text="This address will be used to calculate latitude and longitude. Leave blank and set Latitude and Longitude to specify the location yourself, or leave all three blank to auto-fill from the Location field.")
     lat = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True, verbose_name="Latitude", help_text="Calculated automatically if mappable location is set.")
     lon = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True, verbose_name="Longitude", help_text="Calculated automatically if mappable location is set.")
+    featured_name = models.CharField(_('fearured name'), max_length=512, blank=True, null=True)
+    description = RichTextField(_('description'), blank=True)
+    link = models.URLField(max_length=512, blank=True, null=True)
 
     class Meta:
         verbose_name = _("Event Location")
@@ -185,3 +190,17 @@ class EventCategory(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class EventPrice(models.Model):
+    """(EventPrice description)"""
+
+    price = models.FloatField(_('price'))
+    unit = models.CharField(_('Unit'), max_length=16, blank=True)
+
+    class Meta:
+        verbose_name = _("Event price")
+        verbose_name_plural = _("Event pricies")
+
+    def __unicode__(self):
+        return str(value)

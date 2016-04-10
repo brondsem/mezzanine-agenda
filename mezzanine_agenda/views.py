@@ -9,6 +9,8 @@ from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.views.generic import *
+from django.views.generic.base import *
 
 from icalendar import Calendar
 
@@ -177,3 +179,24 @@ def icalendar(request, tag=None, year=None, month=None, username=None,
         icalendar.add_component(icalendar_event)
 
     return HttpResponse(icalendar.to_ical(), content_type="text/calendar")
+
+
+class LocationListView(ListView):
+
+    model = EventLocation
+    template_name='agenda/event_location_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(LocationListView, self).get_context_data(**kwargs)
+        return context
+
+
+class LocationDetailView(DetailView):
+
+    model = EventLocation
+    template_name='agenda/event_location_detail.html'
+    context_object_name = 'location'
+
+    def get_context_data(self, **kwargs):
+        context = super(LocationDetailView, self).get_context_data(**kwargs)
+        return context

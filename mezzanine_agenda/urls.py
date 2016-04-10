@@ -60,4 +60,7 @@ urlpatterns = [
     url("^$", event_list, name="event_list"),
     url("^archive/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})%s$" % _slash,
         event_list, name="event_list_day"),
+    url("^locations/$", LocationListView.as_view(), name="location-list"),
+    url("^locations/(?P<slug>.*)%s$" % _slash,
+        LocationDetailView.as_view(), name="location-detail"),
 ]

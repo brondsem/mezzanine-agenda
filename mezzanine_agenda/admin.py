@@ -42,7 +42,8 @@ class EventLocationAdmin(admin.ModelAdmin):
     unless explicitly specified.
     """
 
-    fieldsets = ((None, {"fields": ("title", "address", "mappable_location", "lat", "lon")}),)
+    fieldsets = ((None, {"fields": ("title", "address", "mappable_location", "lat", "lon",
+                "featured_name", "description", "link" )}),)
 
     def in_menu(self):
         """
