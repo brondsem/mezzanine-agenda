@@ -196,12 +196,13 @@ class EventCategory(models.Model):
 class EventPrice(models.Model):
     """(EventPrice description)"""
 
-    price = models.FloatField(_('price'))
-    unit = models.CharField(_('Unit'), max_length=16, blank=True)
+    value = models.FloatField(_('value'))
+    unit = models.CharField(_('Unit'), max_length=16, blank=True, null=True)
 
     class Meta:
         verbose_name = _("Event price")
         verbose_name_plural = _("Event pricies")
+        ordering = ('-value',)
 
     def __str__(self):
-        return str(self.price)
+        return str(self.value)
