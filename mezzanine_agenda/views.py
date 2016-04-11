@@ -200,3 +200,14 @@ class LocationDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(LocationDetailView, self).get_context_data(**kwargs)
         return context
+
+
+class PassView(TemplateView):
+
+    template_name='agenda/event_iframe.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PassView, self).get_context_data(**kwargs)
+        context['url'] = settings.EVENT_PASS_URL
+        context['title'] = 'Pass'
+        return context

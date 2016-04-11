@@ -63,4 +63,7 @@ urlpatterns = [
     url("^locations/$", LocationListView.as_view(), name="location-list"),
     url("^locations/(?P<slug>.*)%s$" % _slash,
         LocationDetailView.as_view(), name="location-detail"),
+    url("^pass%s$" % _slash,
+        PassView.as_view(), name="event_pass"),
+
 ]
