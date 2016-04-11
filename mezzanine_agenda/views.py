@@ -41,6 +41,8 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
     if tag is not None:
         tag = get_object_or_404(Keyword, slug=tag)
         events = events.filter(keywords__keyword=tag)
+    if not day:
+        events = events.filter(parent=None)
     if year is not None:
         events = events.filter(start__year=year)
         if month is not None:
