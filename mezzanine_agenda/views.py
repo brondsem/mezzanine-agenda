@@ -3,7 +3,7 @@ from future.builtins import str
 from future.builtins import int
 from calendar import month_name, day_name
 
-from datetime import datetime
+from datetime import datetime, date
 
 from django.contrib.sites.models import Site
 from django.db.models import Q
@@ -37,6 +37,7 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
     """
     settings.use_editable()
     templates = []
+    day_date = None
     events = Event.objects.published(for_user=request.user)
     if tag is not None:
         tag = get_object_or_404(Keyword, slug=tag)
@@ -48,11 +49,13 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
         if month is not None:
             events = events.filter(start__month=month)
             try:
+                month_orig = month
                 month = month_name[int(month)]
             except IndexError:
                 raise Http404()
             if day is not None:
                 events = events.filter(start__day=day)
+                day_date = date(year=int(year), month=int(month_orig), day=int(day))
     if location is not None:
         location = get_object_or_404(EventLocation, slug=location)
         events = events.filter(location=location)
@@ -73,7 +76,7 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
                           settings.EVENT_PER_PAGE,
                           settings.MAX_PAGING_LINKS)
     context = {"events": events, "year": year, "month": month, "day": day,
-               "tag": tag, "location": location, "author": author}
+               "tag": tag, "location": location, "author": author, 'day_date':day_date}
     templates.append(template)
     return render(request, templates, context)
 
@@ -187,6 +190,19 @@ class LocationListView(ListView):
 
     model = EventLocation
     template_name='agenda/event_location_list.html'
+
+    def get_queryset(self):
+        location_list = []
+        featured_list = []
+        locations = self.model.objects.all().order_by('featured_name')
+        for location in locations:
+            if location.featured_name:
+                if not location.featured_name in featured_list:
+                    location_list.append(location)
+                    featured_list.append(location.featured_name)
+            else:
+                location_list.append(location)
+        return location_list
 
     def get_context_data(self, **kwargs):
         context = super(LocationListView, self).get_context_data(**kwargs)
