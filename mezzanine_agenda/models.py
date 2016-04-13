@@ -139,7 +139,7 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
         except AttributeError:
             queryset = concrete_model.objects.all
         try:
-            return queryset(**kwargs).filter(**lookup).order_by(order)[0]
+            return queryset(**kwargs).filter(**lookup).filter(parent__isnull=True).order_by(order)[0]
         except IndexError:
             pass
 
