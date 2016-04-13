@@ -18,6 +18,7 @@ from mezzanine.core.models import Displayable, Ownable, RichText, Slugged
 from mezzanine.generic.fields import CommentsField, RatingField
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 from mezzanine.utils.sites import current_site_id
+from mezzanine.utils.models import base_concrete_model, get_user_model_name
 
 
 class Event(Displayable, Ownable, RichText, AdminThumbMixin):
@@ -122,6 +123,37 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
             domain=Site.objects.get(id=current_site_id()).domain,
         ).encode("utf-8")
         return icalendar_event
+
+    def _get_next_or_previous_by_start_date(self, is_next, **kwargs):
+        """
+        Retrieves next or previous object by start date. We implement
+        our own version instead of Django's so we can hook into the
+        published manager and concrete subclasses.
+        """
+        arg = "start__gt" if is_next else "start__lt"
+        order = "start" if is_next else "-start"
+        lookup = {arg: self.start}
+        concrete_model = base_concrete_model(Displayable, self)
+        try:
+            queryset = concrete_model.objects.published
+        except AttributeError:
+            queryset = concrete_model.objects.all
+        try:
+            return queryset(**kwargs).filter(**lookup).order_by(order)[0]
+        except IndexError:
+            pass
+
+    def get_next_by_start_date(self, **kwargs):
+        """
+        Retrieves next object by start date.
+        """
+        return self._get_next_or_previous_by_start_date(True, **kwargs)
+
+    def get_previous_by_start_date(self, **kwargs):
+        """
+        Retrieves previous object by start date.
+        """
+        return self._get_next_or_previous_by_start_date(False, **kwargs)
 
 
 class EventLocation(Slugged):
