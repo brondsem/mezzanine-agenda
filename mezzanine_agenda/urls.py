@@ -45,6 +45,8 @@ urlpatterns = [
         event_detail, name="event_detail_month"),
     url("^(?P<year>\d{4})/(?P<slug>.*)%s$" % _slash,
         event_detail, name="event_detail_year"),
+    url("^week/(?P<year>\d{4})/(?P<week>\d{1,2})%s$" % _slash,
+        event_list, name="event_list_week"),
     url("^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/"
         "(?P<slug>.*)/event.ics$", icalendar_event, name="icalendar_event_day"),
     url("^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<slug>.*)/event.ics$",

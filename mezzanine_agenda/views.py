@@ -3,7 +3,7 @@ from future.builtins import str
 from future.builtins import int
 from calendar import month_name, day_name
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from django.contrib.sites.models import Site
 from django.db.models import Q
@@ -27,10 +27,23 @@ from mezzanine.utils.sites import current_site_id
 User = get_user_model()
 
 
+def next_weekday(d, weekday):
+    days_ahead = weekday - d.weekday()
+    if days_ahead <= 0: # Target day already happened this week
+        days_ahead += 7
+    return d + timedelta(days_ahead)
+
+def week_day_range(year, week):
+    first_day = date(int(year),1,1)
+    lower_date = next_weekday(first_day, 0) + timedelta(weeks=int(week)-1)
+    higher_date = lower_date + timedelta(days=int(6))
+    return lower_date, higher_date
+
+
 def event_list(request, tag=None, year=None, month=None, day=None, username=None,
-                   location=None, template="agenda/event_list.html"):
+                   location=None, week=None, template="agenda/event_list.html"):
     """
-    Display a list of events that are filtered by tag, year, month,
+    Display a list of events that are filtered by tag, year, month, week,
     author or location. Custom templates are checked for using the name
     ``agenda/event_list_XXX.html`` where ``XXX`` is either the
     location slug or author's username if given.
@@ -56,6 +69,12 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
             if day is not None:
                 events = events.filter(start__day=day)
                 day_date = date(year=int(year), month=int(month_orig), day=int(day))
+        elif week is not None:
+            events = events.filter(start__year=year)
+            lower_date, higher_date = week_day_range(year, week)
+            events = Event.objects.filter(start__range=(lower_date, higher_date))
+    else:
+        year = events[0].start.year
     if location is not None:
         location = get_object_or_404(EventLocation, slug=location)
         events = events.filter(location=location)
@@ -75,7 +94,7 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
     events = paginate(events, request.GET.get("page", 1),
                           settings.EVENT_PER_PAGE,
                           settings.MAX_PAGING_LINKS)
-    context = {"events": events, "year": year, "month": month, "day": day,
+    context = {"events": events, "year": year, "month": month, "day": day, "week": week,
                "tag": tag, "location": location, "author": author, 'day_date':day_date}
     templates.append(template)
     return render(request, templates, context)

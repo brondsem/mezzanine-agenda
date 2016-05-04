@@ -22,6 +22,7 @@ import pytz
 from time import strptime
 from datetime import date, datetime, timedelta
 
+from mezzanine_agenda.views import next_weekday, week_day_range
 User = get_user_model()
 
 register = Library()
@@ -263,3 +264,14 @@ def all_days(*args):
 @register.filter
 def events_in_day(date):
     return Event.objects.filter(start__date=date)
+
+@register.as_tag
+def all_weeks(*args):
+    events =  Event.objects.all()
+    first_event = events[0]
+    last_event = events[len(events)-1]
+    return range(first_event.start.isocalendar()[1], last_event.start.isocalendar()[1]+1)
+
+@register.filter
+def week_range(week, year):
+    return week_day_range(year, week)
