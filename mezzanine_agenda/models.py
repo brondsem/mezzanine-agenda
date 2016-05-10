@@ -19,6 +19,7 @@ from mezzanine.generic.fields import CommentsField, RatingField
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 from mezzanine.utils.sites import current_site_id
 from mezzanine.utils.models import base_concrete_model, get_user_model_name
+from mezzanine.blog.models import BlogPost
 
 
 class Event(Displayable, Ownable, RichText, AdminThumbMixin):
@@ -45,6 +46,8 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
     featured_image_description = models.TextField(_('featured image description'), blank=True)
     external_id = models.IntegerField(_('external_id'), null=True, blank=True)
     prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'),
+        related_name='events', blank=True)
+    blog_posts = models.ManyToManyField(BlogPost, verbose_name=_('blog posts'),
         related_name='events', blank=True)
 
     admin_thumb_field = "featured_image"
