@@ -72,7 +72,7 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
         elif week is not None:
             events = events.filter(start__year=year)
             lower_date, higher_date = week_day_range(year, week)
-            events = Event.objects.filter(start__range=(lower_date, higher_date))
+            events = events.filter(start__range=(lower_date, higher_date))
     else:
         year = events[0].start.year
     if location is not None:
