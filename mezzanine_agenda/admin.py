@@ -27,6 +27,7 @@ class EventAdmin(DisplayableAdmin, OwnableAdmin):
     if settings.EVENT_USE_FEATURED_IMAGE:
         list_display.insert(0, "admin_thumb")
     list_filter = deepcopy(DisplayableAdmin.list_filter) + ("location",)
+    filter_horizontal = ['blog_posts']
 
     def save_form(self, request, form, change):
         """
