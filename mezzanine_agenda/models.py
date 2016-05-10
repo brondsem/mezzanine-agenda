@@ -41,14 +41,16 @@ class Event(Displayable, Ownable, RichText, AdminThumbMixin):
     rating = RatingField(verbose_name=_("Rating"))
     featured_image = FileField(verbose_name=_("Featured Image"), upload_to='images/events/',
         format="Image", max_length=255, null=True, blank=True)
-    featured_image_header = FileField(_('featured image header'),
-        upload_to='images/events/headers', max_length=1024, blank=True, format="Image")
     featured_image_description = models.TextField(_('featured image description'), blank=True)
+    featured_image_header = FileField(_('featured image header'),
+    upload_to='images/events/headers', max_length=1024, blank=True, format="Image")
     external_id = models.IntegerField(_('external_id'), null=True, blank=True)
     prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'),
         related_name='events', blank=True)
     blog_posts = models.ManyToManyField(BlogPost, verbose_name=_('blog posts'),
         related_name='events', blank=True)
+    brochure = FileField(_('brochure'),
+        upload_to='brochures', max_length=1024, blank=True)
 
     admin_thumb_field = "featured_image"
 
