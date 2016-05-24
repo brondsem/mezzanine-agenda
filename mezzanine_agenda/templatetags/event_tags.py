@@ -256,10 +256,12 @@ def perdelta(start, end, delta):
 @register.as_tag
 def all_days(*args):
     events = Event.objects.all().order_by('start')
-    lower = events[0].start
-    higher = events.latest('start').start
-    date_list = [d for d in perdelta(lower, higher, timedelta(days=1))]
-    return date_list
+    if events:
+        lower = events[0].start
+        higher = events.latest('start').start
+        date_list = [d for d in perdelta(lower, higher, timedelta(days=1))]
+        return date_list
+    return []
 
 @register.filter
 def events_in_day(date):
