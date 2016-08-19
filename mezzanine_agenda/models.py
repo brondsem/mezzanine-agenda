@@ -22,37 +22,65 @@ from mezzanine.utils.models import base_concrete_model, get_user_model_name
 from mezzanine.blog.models import BlogPost
 
 
-class Event(Displayable, Ownable, RichText, AdminThumbMixin):
+ALIGNMENT_CHOICES = (('left', _('left')), ('center', _('center')), ('right', _('right')))
+
+class SubTitle(models.Model):
+
+    sub_title = models.TextField(_('sub title'), blank=True, max_length=1024)
+
+    class Meta:
+        abstract = True
+
+
+class Photo(models.Model):
+    """Photo bundle with credits"""
+
+    photo = FileField(_('photo'), upload_to='images/photos', max_length=1024, blank=True, format="Image")
+    photo_credits = models.CharField(_('photo credits'), max_length=255, blank=True, null=True)
+    photo_alignment = models.CharField(_('photo alignment'), choices=ALIGNMENT_CHOICES, max_length=32, default="left", blank=True)
+    photo_description = models.TextField(_('photo description'), blank=True)
+
+    photo_card = FileField(_('card photo'), upload_to='images/photos/card', max_length=1024, blank=True, format="Image")
+    photo_card_credits = models.CharField(_('photo card credits'), max_length=255, blank=True, null=True)
+
+    photo_slider = FileField(_('slider photo'), upload_to='images/photos/slider', max_length=1024, blank=True, format="Image")
+    photo_slider_credits = models.CharField(_('photo slider credits'), max_length=255, blank=True, null=True)
+    abstract = True
+
+    class Meta:
+        abstract = True
+
+    @property
+    def card(self):
+        if self.photo_card:
+            return self.photo_card
+        else:
+            return self.photo
+
+
+class Event(Displayable, SubTitle, Ownable, Photo, RichText, AdminThumbMixin):
     """
-    A event.
+    An event.
     """
 
-    parent = models.ForeignKey('Event', verbose_name=_('parent'),
-        related_name='children', blank=True, null=True,
-        on_delete=models.SET_NULL)
-    category = models.ForeignKey('EventCategory', related_name='events',
-        verbose_name=_('category'), blank=True, null=True, on_delete=models.SET_NULL)
+    parent = models.ForeignKey('Event', verbose_name=_('parent'), related_name='children', blank=True, null=True, on_delete=models.SET_NULL)
+
     start = models.DateTimeField(_("Start"))
     end = models.DateTimeField(_("End"), blank=True, null=True)
+
     location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
     facebook_event = models.BigIntegerField(_('Facebook'), blank=True, null=True)
+    external_id = models.IntegerField(_('external_id'), null=True, blank=True)
+
+    brochure = FileField(_('brochure'), upload_to='brochures', max_length=1024, blank=True)
+    prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'), related_name='events', blank=True)
+    blog_posts = models.ManyToManyField(BlogPost, verbose_name=_('blog posts'), related_name='events', blank=True)
+
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"), default=False)
     comments = CommentsField(verbose_name=_("Comments"))
     rating = RatingField(verbose_name=_("Rating"))
-    featured_image = FileField(verbose_name=_("Featured Image"), upload_to='images/events/',
-        format="Image", max_length=255, null=True, blank=True)
-    featured_image_description = models.TextField(_('featured image description'), blank=True)
-    featured_image_header = FileField(_('featured image header'),
-    upload_to='images/events/headers', max_length=1024, blank=True, format="Image")
-    external_id = models.IntegerField(_('external_id'), null=True, blank=True)
-    prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'),
-        related_name='events', blank=True)
-    blog_posts = models.ManyToManyField(BlogPost, verbose_name=_('blog posts'),
-        related_name='events', blank=True)
-    brochure = FileField(_('brochure'),
-        upload_to='brochures', max_length=1024, blank=True)
 
-    admin_thumb_field = "featured_image"
+    admin_thumb_field = "photo"
 
     class Meta:
         verbose_name = _("Event")
@@ -214,20 +242,6 @@ class EventLocation(Slugged):
     @models.permalink
     def get_absolute_url(self):
         return ("event_list_location", (), {"location": self.slug})
-
-
-class EventCategory(models.Model):
-    """Event Category"""
-
-    name = models.CharField(_('name'), max_length=512)
-    description = models.TextField(_('description'), blank=True)
-
-    class Meta:
-        verbose_name = _("Event category")
-        verbose_name_plural = _("Event categories")
-
-    def __str__(self):
-        return self.name
 
 
 class EventPrice(models.Model):
