@@ -277,3 +277,8 @@ def all_weeks(*args):
 @register.filter
 def week_range(week, year):
     return week_day_range(year, week)
+
+
+@register.filter
+def subtract(value, arg):
+    return value - arg
