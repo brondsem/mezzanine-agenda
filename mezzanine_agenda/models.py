@@ -19,7 +19,6 @@ from mezzanine.generic.fields import CommentsField, RatingField
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 from mezzanine.utils.sites import current_site_id
 from mezzanine.utils.models import base_concrete_model, get_user_model_name
-from mezzanine.blog.models import BlogPost
 
 
 ALIGNMENT_CHOICES = (('left', _('left')), ('center', _('center')), ('right', _('right')))
@@ -38,6 +37,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     """
 
     parent = models.ForeignKey('Event', verbose_name=_('parent'), related_name='children', blank=True, null=True, on_delete=models.SET_NULL)
+    category = models.ForeignKey('EventCategory', verbose_name=_('category'), related_name='events', blank=True, null=True, on_delete=models.SET_NULL)
 
     start = models.DateTimeField(_("Start"))
     end = models.DateTimeField(_("End"), blank=True, null=True)
@@ -230,3 +230,20 @@ class EventPrice(models.Model):
 
     def __str__(self):
         return str(self.value)
+
+
+class EventCategory(models.Model):
+
+    name = models.CharField(_('name'), max_length=512)
+    description = models.TextField(_('description'), blank=True)
+
+    class Meta:
+        verbose_name = _("Event category")
+        verbose_name_plural = _("Event categories")
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def slug(self):
+        return slugify(self.__unicode__())
