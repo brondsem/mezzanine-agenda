@@ -23,6 +23,7 @@ from mezzanine.utils.models import base_concrete_model, get_user_model_name
 
 ALIGNMENT_CHOICES = (('left', _('left')), ('center', _('center')), ('right', _('right')))
 
+
 class SubTitle(models.Model):
 
     sub_title = models.TextField(_('sub title'), blank=True, max_length=1024)
