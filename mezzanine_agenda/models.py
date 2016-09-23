@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 from geopy.geocoders import GoogleV3 as GoogleMaps
 from geopy.exc import GeocoderQueryError
@@ -44,8 +45,9 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     end = models.DateTimeField(_("End"), blank=True, null=True)
 
     location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
-    facebook_event = models.BigIntegerField(_('Facebook'), blank=True, null=True)
-    external_id = models.IntegerField(_('external_id'), null=True, blank=True)
+    language = models.CharField(_('Language'), max_length=64, blank=True, null=True, choices=settings.LANGUAGES)
+    facebook_event = models.BigIntegerField(_('Facebook ID'), blank=True, null=True)
+    external_id = models.IntegerField(_('External ID'), null=True, blank=True)
 
     brochure = FileField(_('brochure'), upload_to='brochures', max_length=1024, blank=True)
     prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'), related_name='events', blank=True)
