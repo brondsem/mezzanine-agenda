@@ -80,8 +80,6 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
             self.content = self.parent.content
             if not self.location:
                 self.location = self.parent.location
-            self.featured_image = self.parent.featured_image
-            self.featured_image_header = self.parent.featured_image_header
         super(Event, self).save()
 
 
