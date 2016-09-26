@@ -174,7 +174,7 @@ class EventLocation(Slugged):
     mappable_location = models.CharField(max_length=128, blank=True, help_text="This address will be used to calculate latitude and longitude. Leave blank and set Latitude and Longitude to specify the location yourself, or leave all three blank to auto-fill from the Location field.")
     lat = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True, verbose_name="Latitude", help_text="Calculated automatically if mappable location is set.")
     lon = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True, verbose_name="Longitude", help_text="Calculated automatically if mappable location is set.")
-    featured_name = models.CharField(_('featured name'), max_length=512, blank=True, null=True)
+    room = models.CharField(_('room'), max_length=512, blank=True, null=True)
     description = RichTextField(_('description'), blank=True)
     link = models.URLField(max_length=512, blank=True, null=True)
     external_id = models.IntegerField(_('external_id'), null=True, blank=True)
