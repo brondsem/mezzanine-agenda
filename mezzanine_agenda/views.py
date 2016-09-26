@@ -212,13 +212,13 @@ class LocationListView(ListView):
 
     def get_queryset(self):
         location_list = []
-        featured_list = []
-        locations = self.model.objects.all().order_by('featured_name')
+        room = []
+        locations = self.model.objects.all().order_by('room')
         for location in locations:
-            if location.featured_name:
-                if not location.featured_name in featured_list:
+            if location.room:
+                if not location.room in room:
                     location_list.append(location)
-                    featured_list.append(location.featured_name)
+                    room.append(location.room)
             else:
                 location_list.append(location)
         return location_list
