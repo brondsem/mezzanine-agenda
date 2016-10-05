@@ -46,7 +46,6 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     date_text = models.CharField(_('Date text'), max_length=512, blank=True, null=True)
 
     location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
-    language = models.CharField(_('Language'), max_length=64, blank=True, null=True, choices=settings.LANGUAGES)
     facebook_event = models.BigIntegerField(_('Facebook ID'), blank=True, null=True)
     external_id = models.IntegerField(_('External ID'), null=True, blank=True)
 
