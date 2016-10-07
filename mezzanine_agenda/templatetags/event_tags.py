@@ -7,6 +7,9 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.http import urlquote as quote
 from django.utils.safestring import mark_safe
+from django.utils import translation
+from django.template.defaultfilters import date as _date
+from django.utils.translation import ugettext as _
 
 from mezzanine_agenda.models import Event, EventLocation
 from mezzanine.conf import settings
@@ -21,6 +24,7 @@ import pytz
 
 from time import strptime
 from datetime import date, datetime, timedelta
+import locale
 
 from mezzanine_agenda.views import next_weekday, week_day_range
 User = get_user_model()
@@ -282,3 +286,13 @@ def week_range(week, year):
 @register.filter
 def subtract(value, arg):
     return value - arg
+
+@register.filter
+def same_time_in_periods(periods):
+    if periods:
+        last_time = periods[0].date_from.time()
+        for period in periods:
+            if period.date_from.time() != last_time:
+                return False
+        return True
+    return False
