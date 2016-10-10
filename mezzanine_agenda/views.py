@@ -52,11 +52,17 @@ def event_list(request, tag=None, year=None, month=None, day=None, username=None
     templates = []
     day_date = None
     events = Event.objects.published(for_user=request.user)
+
     if tag is not None:
         tag = get_object_or_404(Keyword, slug=tag)
         events = events.filter(keywords__keyword=tag)
-    if not day:
-        events = events.filter(parent=None)
+    else:
+        for exclude_tag_slug in settings.EVENT_EXCLUDE_TAG_LIST:
+            exclude_tag = get_object_or_404(Keyword, slug=exclude_tag_slug)
+            events = events.exclude(keywords__keyword=exclude_tag)
+
+    # if not day:
+    #     events = events.filter(parent=None)
     if year is not None:
         events = events.filter(start__year=year)
         if month is not None:
