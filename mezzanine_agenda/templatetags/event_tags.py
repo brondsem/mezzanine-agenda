@@ -296,3 +296,7 @@ def same_time_in_periods(periods):
                 return False
         return True
     return False
+
+@register.filter
+def tag_is_excluded(tag):
+    return tag.slug in settings.EVENT_EXCLUDE_TAG_LIST
