@@ -300,3 +300,7 @@ def same_time_in_periods(periods):
 @register.filter
 def tag_is_excluded(tag):
     return tag.slug in settings.EVENT_EXCLUDE_TAG_LIST
+
+@register.filter
+def period_is_more_than_hours(period, hours):
+    return (period.date_to - period.date_from).seconds > hours*3600
