@@ -163,6 +163,12 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
         """
         return self._get_next_or_previous_by_start_date(False, **kwargs)
 
+    def date_format(self):
+        if self.periods.all():
+            return 'D j M'
+        else:
+            return 'l j F'
+
 
 class EventLocation(Slugged):
     """
