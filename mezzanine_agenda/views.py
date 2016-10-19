@@ -40,70 +40,87 @@ def week_day_range(year, week):
     return lower_date, higher_date
 
 
-def event_list(request, tag=None, year=None, month=None, day=None, username=None,
-                   location=None, week=None, template="agenda/event_list.html"):
+class EventListView(ListView):
     """
     Display a list of events that are filtered by tag, year, month, week,
     author or location. Custom templates are checked for using the name
     ``agenda/event_list_XXX.html`` where ``XXX`` is either the
     location slug or author's username if given.
     """
-    settings.use_editable()
-    templates = []
-    day_date = None
-    events = Event.objects.published(for_user=request.user)
+    model = Event
+    template_name = "agenda/event_list.html"
+    context_object_name = 'events'
 
-    if tag is not None:
-        tag = get_object_or_404(Keyword, slug=tag)
-        events = events.filter(keywords__keyword=tag)
-    else:
-        for exclude_tag_slug in settings.EVENT_EXCLUDE_TAG_LIST:
-            exclude_tag = get_object_or_404(Keyword, slug=exclude_tag_slug)
-            events = events.exclude(keywords__keyword=exclude_tag)
+    def get_queryset(self, tag=None):
+        settings.use_editable()
+        self.templates = []
+        self.day_date = None
+        events = None
+        self.tag = None if "tag" not in self.kwargs else self.kwargs['tag']
+        self.year = None if "year" not in self.kwargs else self.kwargs['year']
+        self.month = None if "month" not in self.kwargs else self.kwargs['month']
+        self.day = None if "day" not in self.kwargs else self.kwargs['day']
+        self.username = None if "username" not in self.kwargs else self.kwargs['username']
+        self.location = None if "location" not in self.kwargs else self.kwargs['location']
+        self.week = None if "week" not in self.kwargs else self.kwargs['week']
 
-    # if not day:
-    #     events = events.filter(parent=None)
-    if year is not None:
-        events = events.filter(start__year=year)
-        if month is not None:
-            events = events.filter(start__month=month)
-            try:
-                month_orig = month
-                month = month_name[int(month)]
-            except IndexError:
-                raise Http404()
-            if day is not None:
-                events = events.filter(start__day=day)
-                day_date = date(year=int(year), month=int(month_orig), day=int(day))
-        elif week is not None:
-            events = events.filter(start__year=year)
-            lower_date, higher_date = week_day_range(year, week)
-            events = events.filter(start__range=(lower_date, higher_date))
-    else:
-        year = events[0].start.year
-    if location is not None:
-        location = get_object_or_404(EventLocation, slug=location)
-        events = events.filter(location=location)
-        templates.append(u"agenda/event_list_%s.html" %
-                          str(location.slug))
-    author = None
-    if username is not None:
-        author = get_object_or_404(User, username=username)
-        events = events.filter(user=author)
-        templates.append(u"agenda/event_list_%s.html" % username)
-    if not tag and not year and not location and not username:
-        #Get upcoming events/ongoing events
-        events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now())).order_by("start")
+        events = Event.objects.published(for_user=self.request.user)
 
-    prefetch = ("keywords__keyword",)
-    events = events.select_related("user").prefetch_related(*prefetch)
-    events = paginate(events, request.GET.get("page", 1),
-                          settings.EVENT_PER_PAGE,
-                          settings.MAX_PAGING_LINKS)
-    context = {"events": events, "year": year, "month": month, "day": day, "week": week,
-               "tag": tag, "location": location, "author": author, 'day_date':day_date}
-    templates.append(template)
-    return render(request, templates, context)
+        if self.tag is not None:
+            self.tag = get_object_or_404(Keyword, slug=self.tag)
+            events = events.filter(keywords__keyword=self.tag)
+        else:
+            for exclude_tag_slug in settings.EVENT_EXCLUDE_TAG_LIST:
+                exclude_tag = get_object_or_404(Keyword, slug=exclude_tag_slug)
+                events = events.exclude(keywords__keyword=exclude_tag)
+
+        # if not day:
+        #     events = events.filter(parent=None)
+        if self.year is not None:
+            events = events.filter(start__year=self.year)
+            if self.month is not None:
+                events = events.filter(start__month=self.month)
+                try:
+                    month_orig = self.month
+                    self.month = month_name[int(self.month)]
+                except IndexError:
+                    raise Http404()
+                if self.day is not None:
+                    events = events.filter(start__day=self.day)
+                    self.day_date = date(year=int(self.year), month=int(month_orig), day=int(self.day))
+            elif self.week is not None:
+                events = events.filter(start__year=self.year)
+                lower_date, higher_date = week_day_range(self.year, self.week)
+                events = events.filter(start__range=(lower_date, higher_date))
+        if self.location is not None:
+            self.location = get_object_or_404(EventLocation, slug=self.location)
+            events = events.filter(location=self.location)
+            self.templates.append(u"agenda/event_list_%s.html" %
+                              str(self.location.slug))
+        self.author = None
+        if self.username is not None:
+            self.author = get_object_or_404(User, username=self.username)
+            events = events.filter(user=self.author)
+            self.templates.append(u"agenda/event_list_%s.html" % self.username)
+
+        if not self.tag and not self.year and not self.location and not self.username:
+            #Get upcoming events/ongoing events
+            events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now())).order_by("start")
+
+        prefetch = ("keywords__keyword",)
+        events = events.select_related("user").prefetch_related(*prefetch)
+        events = paginate(events, self.request.GET.get("page", 1),
+                              settings.EVENT_PER_PAGE,
+                              settings.MAX_PAGING_LINKS)
+
+        self.templates.append(self.template_name)
+        return events
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(EventListView, self).get_context_data(**kwargs)
+        context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
+               "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
+        return context
 
 
 def event_detail(request, slug, year=None, month=None, day=None,
