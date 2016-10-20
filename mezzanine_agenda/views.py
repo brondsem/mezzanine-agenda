@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from future.builtins import str
 from future.builtins import int
-from calendar import month_name, day_name
+from calendar import month_name, day_name, monthrange
 
 from datetime import datetime, date, timedelta
 
@@ -120,6 +120,69 @@ class EventListView(ListView):
         context = super(EventListView, self).get_context_data(**kwargs)
         context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
                "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
+        return context
+
+
+
+class ArchiveListView(ListView):
+    """
+    Display a list of events that are filtered by, year, month, day. Custom templates are checked for using the name
+    ``agenda/event_list_XXX.html`` where ``XXX`` is either the
+    location slug or author's username if given.
+    """
+    model = Event
+    template_name = "agenda/event_list.html"
+    context_object_name = 'events'
+
+    def get_queryset(self, tag=None):
+
+        settings.use_editable()
+        self.templates = self.template_name
+        self.day_date = None
+        events = None
+        self.year = None if "year" not in self.kwargs else self.kwargs['year']
+        self.month = None if "month" not in self.kwargs else self.kwargs['month']
+        self.day = None if "day" not in self.kwargs else self.kwargs['day']
+
+        events = Event.objects.published(for_user=self.request.user)
+
+        if self.year is not None:
+            date_now = datetime.now()
+            digit_year = int(self.year)
+            if date_now.year == digit_year:
+                date_max = date_now
+            else:
+                date_max = date(digit_year+1, 7, 31)
+            events = events.filter(Q(start__gt=date(int(self.year), 8, 1)), Q(start__lt=date_max)).order_by("start")
+
+            if self.month is not None:
+                digit_month = int(self.month)
+                first_day_in_month = date(digit_year, digit_month, 1)
+                last_day_in_month = date(digit_year, digit_month,  monthrange(digit_year, digit_month)[1])
+                # works for periods containing the month or a period in the month
+                events = events.filter((Q(start__lt=first_day_in_month)
+                                       & Q(end__gt=last_day_in_month))
+                                       | Q(start__range=(first_day_in_month, last_day_in_month))
+                                       | Q(end__month=self.month)
+                                       | Q(start__month=self.month)).order_by("start")
+                try:
+                    month_orig = self.month
+                    self.month = month_name[int(self.month)]
+                except IndexError:
+                    raise Http404()
+                if self.day is not None:
+                    events = events.filter(start__day=self.day)
+                    self.day_date = date(year=int(self.year), month=int(month_orig), day=int(self.day))
+
+        events = paginate(events, self.request.GET.get("page", 1),
+                              settings.EVENT_PER_PAGE,
+                              settings.MAX_PAGING_LINKS)
+
+        return events
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ArchiveListView, self).get_context_data(**kwargs)
+        context.update({"year": self.year, "month": self.month, "day": self.day, 'day_date': self.day_date, 'is_archive': True})
         return context
 
 
