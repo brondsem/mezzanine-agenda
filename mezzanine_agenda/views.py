@@ -64,7 +64,11 @@ class EventListView(ListView):
         self.location = None if "location" not in self.kwargs else self.kwargs['location']
         self.week = None if "week" not in self.kwargs else self.kwargs['week']
 
-        events = Event.objects.published(for_user=self.request.user)
+        # display all events if user belongs to the staff
+        if self.request.user.is_staff :
+            events = Event.objects.all()
+        else :
+            events = Event.objects.published(for_user=self.request.user)
 
         if self.tag is not None:
             self.tag = get_object_or_404(Keyword, slug=self.tag)
