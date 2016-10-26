@@ -166,7 +166,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
 
     def date_format(self):
         if self.periods.all():
-            return 'D j M'
+            return 'D j F'
         else:
             return 'l j F'
 
