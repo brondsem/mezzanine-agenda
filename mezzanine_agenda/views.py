@@ -222,7 +222,7 @@ def event_booking(request, slug, year=None, month=None, day=None,
     events = Event.objects.published(
                                      for_user=request.user).select_related()
     event = get_object_or_404(events, slug=slug)
-    context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL}
+    context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL % event.external_id}
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
