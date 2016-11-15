@@ -157,7 +157,7 @@ class ArchiveListView(ListView):
                 date_max = date_now
             else:
                 date_max = date(digit_year+1, 7, 31)
-            events = events.filter(Q(start__gt=date(int(self.year), 8, 1)), Q(start__lt=date_max)).order_by("start")
+            events = events.filter(Q(start__gt=date(int(self.year), 8, 1)), Q(start__lt=date_max)).order_by("-start")
 
             if self.month is not None:
                 digit_month = int(self.month)
