@@ -107,7 +107,7 @@ class EventListView(ListView):
             events = events.filter(user=self.author)
             self.templates.append(u"agenda/event_list_%s.html" % self.username)
 
-        if not self.tag and not self.year and not self.location and not self.username:
+        if not self.year and not self.location and not self.username:
             #Get upcoming events/ongoing events
             events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now())).order_by("start")
 
