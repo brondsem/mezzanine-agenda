@@ -203,6 +203,7 @@ def event_detail(request, slug, year=None, month=None, day=None,
         context_event.sub_title = event.sub_title
         context_event.start = event.start
         context_event.end = event.end
+        context_event.periods = event.periods.all()
         context_event.location = event.location
         child = event
     else:
