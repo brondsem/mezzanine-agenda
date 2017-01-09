@@ -78,7 +78,6 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
         if self.parent:
             self.title = self.parent.title
             self.user = self.parent.user
-            self.status = self.parent.status
             self.content = self.parent.content
             if not self.location:
                 self.location = self.parent.location
