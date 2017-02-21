@@ -113,10 +113,6 @@ class EventListView(ListView):
 
         prefetch = ("keywords__keyword",)
         events = events.select_related("user").prefetch_related(*prefetch)
-        events = paginate(events, self.request.GET.get("page", 1),
-                              settings.EVENT_PER_PAGE,
-                              settings.MAX_PAGING_LINKS)
-
         self.templates.append(self.template_name)
         return events
 
