@@ -57,13 +57,14 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"), default=False)
     comments = CommentsField(verbose_name=_("Comments"))
     rating = RatingField(verbose_name=_("Rating"))
+    rank = models.IntegerField(verbose_name=_('rank'), blank=True, null=True)
 
     admin_thumb_field = "photo"
 
     class Meta:
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
-        ordering = ("start",)
+        ordering = ("rank", "start",)
 
     def clean(self):
         """

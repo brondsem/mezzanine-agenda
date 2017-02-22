@@ -93,3 +93,11 @@ register_setting(
     editable=True,
     default=True,
 )
+
+register_setting(
+    name="PAST_EVENTS",
+    label=_("Past events"),
+    description=_("Display or not past events."),
+    editable=True,
+    default=False,
+)

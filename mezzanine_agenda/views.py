@@ -109,7 +109,7 @@ class EventListView(ListView):
 
         if not self.year and not self.location and not self.username:
             #Get upcoming events/ongoing events
-            events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now())).order_by("start")
+            events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now()))
 
         prefetch = ("keywords__keyword",)
         events = events.select_related("user").prefetch_related(*prefetch)
@@ -120,6 +120,8 @@ class EventListView(ListView):
         context = super(EventListView, self).get_context_data(**kwargs)
         context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
                "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
+        if settings.PAST_EVENTS:
+            context['past_events'] = Event.objects.filter(Q(start__lt=datetime.now()) | Q(end__lt=datetime.now())).order_by("start")
         return context
 
 
