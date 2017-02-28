@@ -223,7 +223,7 @@ def google_static_map(obj, width, height, zoom):
         scale = 2
     else:
         scale = 1
-    return mark_safe("<img src='http://maps.googleapis.com/maps/api/staticmap?size={width}x{height}&scale={scale}&format=png&markers={marker}&sensor=false&zoom={zoom}' width='{width}' height='{height}' />".format(**locals()))
+    return mark_safe("<img src='//maps.googleapis.com/maps/api/staticmap?size={width}x{height}&scale={scale}&format=png&markers={marker}&sensor=false&zoom={zoom}' width='{width}' height='{height}' />".format(**locals()))
 
 
 @register.simple_tag(takes_context=True)
