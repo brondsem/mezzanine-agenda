@@ -48,6 +48,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
     facebook_event = models.BigIntegerField(_('Facebook ID'), blank=True, null=True)
     external_id = models.IntegerField(_('External ID'), null=True, blank=True)
+    is_full = models.BooleanField(verbose_name=_("Is Full"), default=False)    
 
     brochure = FileField(_('brochure'), upload_to='brochures', max_length=1024, blank=True)
     prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'), related_name='events', blank=True)

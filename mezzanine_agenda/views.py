@@ -8,7 +8,7 @@ from datetime import datetime, date, timedelta
 from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.http import Http404, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import *
 from django.views.generic.base import *
 
@@ -221,6 +221,9 @@ def event_booking(request, slug, year=None, month=None, day=None,
     events = Event.objects.published(
                                      for_user=request.user).select_related()
     event = get_object_or_404(events, slug=slug)
+    if event.is_full:
+        return redirect('event_detail', slug=event.slug)
+
     context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL % event.external_id}
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
