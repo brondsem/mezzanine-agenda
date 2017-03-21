@@ -151,7 +151,7 @@ class ArchiveListView(ListView):
         if self.year is not None:
             date_now = datetime.now()
             digit_year = int(self.year)
-            if date_now.year == digit_year:
+            if date_now.year == digit_year or digit_year == date_now.year - 1:
                 date_max = date_now
             else:
                 date_max = date(digit_year+1, 7, 31)
