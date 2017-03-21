@@ -121,7 +121,7 @@ class EventListView(ListView):
         context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
                "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
         if settings.PAST_EVENTS:
-            context['past_events'] = Event.objects.filter(Q(start__lt=datetime.now()) | Q(end__lt=datetime.now())).order_by("start")
+            context['past_events'] = Event.objects.filter(end__lt=datetime.now()).order_by("start")
         return context
 
 
