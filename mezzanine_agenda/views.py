@@ -198,11 +198,6 @@ def event_detail(request, slug, year=None, month=None, day=None,
     event = get_object_or_404(events, slug=slug)
     if event.parent:
         context_event = event.parent
-        context_event.sub_title = event.sub_title
-        context_event.start = event.start
-        context_event.end = event.end
-        context_event.periods = event.periods.all()
-        context_event.location = event.location
         child = event
     else:
         context_event = event
