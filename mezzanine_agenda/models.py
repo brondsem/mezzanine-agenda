@@ -48,7 +48,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
     facebook_event = models.BigIntegerField(_('Facebook ID'), blank=True, null=True)
     external_id = models.IntegerField(_('External ID'), null=True, blank=True)
-    is_full = models.BooleanField(verbose_name=_("Is Full"), default=False)    
+    is_full = models.BooleanField(verbose_name=_("Is Full"), default=False)
 
     brochure = FileField(_('brochure'), upload_to='brochures', max_length=1024, blank=True)
     prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'), related_name='events', blank=True)
@@ -79,9 +79,18 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     def save(self):
         if self.parent:
             self.title = self.parent.title
+            self.description = self.parent.description
+            self.category = self.parent.category
+            self.mentions = self.parent.mentions
+            if not self.images.all() :
+                self.images = self.parent.images.all()
             self.user = self.parent.user
             self.status = self.parent.status
-            self.content = self.parent.content
+            if not self.content:
+                self.content = self.parent.content
+            self.departments = self.parent.departments.all()
+            if not self.links:
+                self.links = self.parent.links
             if not self.location:
                 self.location = self.parent.location
         super(Event, self).save()
