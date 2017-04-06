@@ -82,8 +82,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
             self.description = self.parent.description
             self.category = self.parent.category
             self.mentions = self.parent.mentions
-            if not self.images.all() :
-                self.images = self.parent.images.all()
+            self.images = self.parent.images.all()
             self.user = self.parent.user
             self.status = self.parent.status
             if not self.content:
