@@ -7,11 +7,11 @@ from datetime import datetime, date, timedelta
 
 from django.contrib.sites.models import Site
 from django.db.models import Q
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import *
 from django.views.generic.base import *
-
+from django.core import serializers
 from icalendar import Calendar
 
 from mezzanine_agenda import __version__
@@ -23,6 +23,8 @@ from mezzanine.pages.models import Page
 from mezzanine.utils.views import render, paginate
 from mezzanine.utils.models import get_user_model
 from mezzanine.utils.sites import current_site_id
+
+from mezzanine_agenda.forms import EventFilterForm
 
 User = get_user_model()
 
@@ -50,6 +52,15 @@ class EventListView(ListView):
     model = Event
     template_name = "agenda/event_list.html"
     context_object_name = 'events'
+    form_initial = {}
+
+    def get(self, request, *args, **kwargs):
+        response = super(EventListView, self).get(request, *args, **kwargs)
+        # AJAX
+        if request.is_ajax():
+            object_list_json = serializers.serialize('json', self.object_list)
+            reponse = JsonResponse(object_list_json, safe=False)
+        return response
 
     def get_queryset(self, tag=None):
         settings.use_editable()
@@ -111,6 +122,18 @@ class EventListView(ListView):
             #Get upcoming events/ongoing events
             events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now()))
 
+        # Filter by locations
+        event_locations_filter = self.request.GET.getlist('event_locations_filter')
+        if event_locations_filter:
+            events = events.filter(location__title__in=event_locations_filter)
+            self.form_initial['event_locations_filter'] = event_locations_filter
+
+        # Filter by categories
+        event_categories_filter = self.request.GET.getlist('event_categories_filter')
+        if event_categories_filter:
+            events = events.filter(category__name__in=event_categories_filter)
+            self.form_initial['event_categories_filter'] = event_categories_filter
+
         prefetch = ("keywords__keyword",)
         events = events.select_related("user").prefetch_related(*prefetch)
         self.templates.append(self.template_name)
@@ -120,10 +143,12 @@ class EventListView(ListView):
         context = super(EventListView, self).get_context_data(**kwargs)
         context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
                "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
+
+        context['filter_form'] = EventFilterForm(initial=self.form_initial)
         if settings.PAST_EVENTS:
             context['past_events'] = Event.objects.filter(end__lt=datetime.now()).order_by("start")
-        return context
 
+        return context
 
 
 class ArchiveListView(ListView):
