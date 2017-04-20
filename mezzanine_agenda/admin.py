@@ -23,7 +23,7 @@ class EventAdmin(DisplayableAdmin, OwnableAdmin):
 
     fieldsets = deepcopy(EventAdminBase.fieldsets)
     exclude = ("short_url", )
-    list_display = ["title", "start", "end", "user", "status", "admin_link"]
+    list_display = ["title", "start", "end", "user", "rank", "status", "admin_link"]
     if settings.EVENT_USE_FEATURED_IMAGE:
         list_display.insert(0, "admin_thumb")
     list_filter = deepcopy(DisplayableAdmin.list_filter) + ("location",)

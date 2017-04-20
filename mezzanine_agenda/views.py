@@ -8,7 +8,7 @@ from datetime import datetime, date, timedelta
 from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.http import Http404, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import *
 from django.views.generic.base import *
 
@@ -109,14 +109,10 @@ class EventListView(ListView):
 
         if not self.year and not self.location and not self.username:
             #Get upcoming events/ongoing events
-            events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now())).order_by("start")
+            events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now()))
 
         prefetch = ("keywords__keyword",)
         events = events.select_related("user").prefetch_related(*prefetch)
-        events = paginate(events, self.request.GET.get("page", 1),
-                              settings.EVENT_PER_PAGE,
-                              settings.MAX_PAGING_LINKS)
-
         self.templates.append(self.template_name)
         return events
 
@@ -124,6 +120,8 @@ class EventListView(ListView):
         context = super(EventListView, self).get_context_data(**kwargs)
         context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
                "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
+        if settings.PAST_EVENTS:
+            context['past_events'] = Event.objects.filter(end__lt=datetime.now()).order_by("start")
         return context
 
 
@@ -223,6 +221,9 @@ def event_booking(request, slug, year=None, month=None, day=None,
     events = Event.objects.published(
                                      for_user=request.user).select_related()
     event = get_object_or_404(events, slug=slug)
+    if event.is_full:
+        return redirect('event_detail', slug=event.slug)
+
     context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL % event.external_id}
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
