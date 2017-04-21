@@ -59,13 +59,12 @@ class EventListView(ListView):
         super().__init__(**kwargs)
         self.form_initial = {}
 
-    def get(self, request, *args, **kwargs):
-        response = super(EventListView, self).get(request, *args, **kwargs)
-        # AJAX
-        if request.is_ajax():
-            object_list_json = serializers.serialize('json', self.object_list)
-            reponse = JsonResponse(object_list_json, safe=False)
-        return response
+    def get_template_names(self):
+        templates = super().get_template_names()
+        # If request is Ajax, return only the event list in html, without template base
+        if self.request.is_ajax():
+            templates.insert(0,'agenda/includes/event_list.html')
+        return templates
 
     def get_queryset(self, tag=None):
         settings.use_editable()
