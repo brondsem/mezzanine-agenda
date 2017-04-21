@@ -1,12 +1,13 @@
 from mezzanine_agenda.models import Event
 import pandas as pd
 from pprint import pprint
+from collections import OrderedDict
 
 def get_events_list_days_form():
     events = Event.objects.published().order_by('start')
     events_all_date = {}
     events_by_day = []
-    day_dict = {}
+    day_dict = OrderedDict()
 
     for event in events:
         events_all_date[event.start.strftime('%Y-%m-%d')] = event.start
