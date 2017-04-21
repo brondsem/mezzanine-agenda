@@ -28,6 +28,7 @@ setup(name='mezzanine-agenda',
         'icalendar',
         'geopy',
         'pytz',
+        'pandas==0.19.2'
     ],
     classifiers = [
         'Development Status :: 4 - Beta',

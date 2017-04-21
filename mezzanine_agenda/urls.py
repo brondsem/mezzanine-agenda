@@ -38,6 +38,8 @@ urlpatterns = [
         ArchiveListView.as_view(), name="event_list_year"),
     url("^archive/(?P<year>\d{4})/calendar.ics$",
         icalendar, name="icalendar_year"),
+    url("^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})%s$" % _slash,
+        EventListView.as_view(), name="event_list_day"),
     url("^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/"
         "(?P<slug>.*)%s$" % _slash,
         event_detail, name="event_detail_day"),
@@ -61,7 +63,7 @@ urlpatterns = [
         name="event_booking"),
     url("^$", EventListView.as_view(), name="event_list"),
     url("^archive/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})%s$" % _slash,
-        ArchiveListView.as_view(), name="event_list_day"),
+        ArchiveListView.as_view(), name="archive_event_list_day"),
     url("^locations/$", LocationListView.as_view(), name="location-list"),
     url("^locations/(?P<slug>.*)%s$" % _slash,
         LocationDetailView.as_view(), name="location-detail"),

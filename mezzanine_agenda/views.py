@@ -2,9 +2,10 @@ from __future__ import unicode_literals
 from future.builtins import str
 from future.builtins import int
 from calendar import month_name, day_name, monthrange
+import ast
 
 from datetime import datetime, date, timedelta
-
+from itertools import chain
 from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
@@ -54,6 +55,10 @@ class EventListView(ListView):
     context_object_name = 'events'
     form_initial = {}
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.form_initial = {}
+
     def get(self, request, *args, **kwargs):
         response = super(EventListView, self).get(request, *args, **kwargs)
         # AJAX
@@ -67,14 +72,23 @@ class EventListView(ListView):
         self.templates = []
         self.day_date = None
         events = None
-        self.tag = None if "tag" not in self.kwargs else self.kwargs['tag']
+        event_day_filter = self.request.GET.getlist('event_day_filter')
+
         self.year = None if "year" not in self.kwargs else self.kwargs['year']
         self.month = None if "month" not in self.kwargs else self.kwargs['month']
         self.day = None if "day" not in self.kwargs else self.kwargs['day']
+
+        if event_day_filter:
+            event_date = datetime.strptime(event_day_filter[0], '%Y-%m-%d')
+            self.form_initial['event_day_filter'] = event_day_filter[0]
+            self.year = event_date.year
+            self.month = event_date.month
+            self.day = event_date.day
+
+        self.tag = None if "tag" not in self.kwargs else self.kwargs['tag']
         self.username = None if "username" not in self.kwargs else self.kwargs['username']
         self.location = None if "location" not in self.kwargs else self.kwargs['location']
         self.week = None if "week" not in self.kwargs else self.kwargs['week']
-
         # display all events if user belongs to the staff
         if self.request.user.is_staff :
             events = Event.objects.all()
@@ -89,6 +103,20 @@ class EventListView(ListView):
                 exclude_tag = get_object_or_404(Keyword, slug=exclude_tag_slug)
                 events = events.exclude(keywords__keyword=exclude_tag)
 
+        # Filter by locations
+        event_locations_filter = self.request.GET.getlist('event_locations_filter')
+        if event_locations_filter:
+            events = events.filter(location__title__in=event_locations_filter)
+            self.form_initial['event_locations_filter'] = event_locations_filter
+
+        # Filter by categories
+        event_categories_filter = self.request.GET.getlist('event_categories_filter')
+        if event_categories_filter:
+            events = events.filter(category__name__in=event_categories_filter)
+            self.form_initial['event_categories_filter'] = event_categories_filter
+
+        prefetch = ("keywords__keyword",)
+        events = events.select_related("user").prefetch_related(*prefetch)
         # if not day:
         #     events = events.filter(parent=None)
         if self.year is not None:
@@ -101,7 +129,9 @@ class EventListView(ListView):
                 except IndexError:
                     raise Http404()
                 if self.day is not None:
-                    events = events.filter(start__day=self.day)
+                    events_by_start = events.filter(start__day=self.day)
+                    events_by_period = events.filter(periods__date_from__day=self.day)
+                    events = list(set(chain(events_by_start, events_by_period)))
                     self.day_date = date(year=int(self.year), month=int(month_orig), day=int(self.day))
             elif self.week is not None:
                 events = events.filter(start__year=self.year)
@@ -122,20 +152,6 @@ class EventListView(ListView):
             #Get upcoming events/ongoing events
             events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now()))
 
-        # Filter by locations
-        event_locations_filter = self.request.GET.getlist('event_locations_filter')
-        if event_locations_filter:
-            events = events.filter(location__title__in=event_locations_filter)
-            self.form_initial['event_locations_filter'] = event_locations_filter
-
-        # Filter by categories
-        event_categories_filter = self.request.GET.getlist('event_categories_filter')
-        if event_categories_filter:
-            events = events.filter(category__name__in=event_categories_filter)
-            self.form_initial['event_categories_filter'] = event_categories_filter
-
-        prefetch = ("keywords__keyword",)
-        events = events.select_related("user").prefetch_related(*prefetch)
         self.templates.append(self.template_name)
         return events
 
@@ -143,7 +159,6 @@ class EventListView(ListView):
         context = super(EventListView, self).get_context_data(**kwargs)
         context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
                "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
-
         context['filter_form'] = EventFilterForm(initial=self.form_initial)
         if settings.PAST_EVENTS:
             context['past_events'] = Event.objects.filter(end__lt=datetime.now()).order_by("start")
