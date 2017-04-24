@@ -1,6 +1,13 @@
 import ast
-from django.forms.widgets import RadioFieldRenderer, RendererMixin, Select, RadioChoiceInput
+from django.forms.widgets import (RadioFieldRenderer,
+                                  RendererMixin,
+                                  Select,
+                                  RadioChoiceInput,
+                                  CheckboxSelectMultiple,
+                                  ChoiceFieldRenderer,
+                                  CheckboxChoiceInput)
 from django import forms
+from itertools import chain
 from django.utils.translation import ugettext_lazy as _
 from mezzanine_agenda.models import *
 from mezzanine_agenda.utils import *
@@ -87,6 +94,26 @@ class EventCalendarForm(forms.Form):
             choices=events_day,
         )
 
+class CustomCheckboxChoiceInput(CheckboxChoiceInput):
+
+    def __init__(self, *args, **kwargs):
+        super(CheckboxChoiceInput, self).__init__(*args, **kwargs)
+        self.value = set(force_text(v) for v in self.value)
+        self.name = self.name + "[]"
+
+class CustomCheckboxFieldRenderer(ChoiceFieldRenderer):
+
+    choice_input_class = CheckboxChoiceInput
+
+
+class CustomCheckboxFieldRenderer(CustomCheckboxFieldRenderer):
+    pass
+
+
+class CustomCheckboxSelectMultiple(CheckboxSelectMultiple):
+
+    renderer = CustomCheckboxFieldRenderer
+
 
 class EventFilterForm(EventCalendarForm):
 
@@ -97,13 +124,13 @@ class EventFilterForm(EventCalendarForm):
         event_locations = EventLocation.objects.distinct('title')
         event_locations = [(loc.title, loc.title) for loc in event_locations]
 
-        self.fields['event_categories_filter[]'] = forms.MultipleChoiceField(
+        self.fields['event_categories_filter'] = forms.MultipleChoiceField(
             required=False,
-            widget=forms.CheckboxSelectMultiple,
+            widget=CustomCheckboxSelectMultiple,
             choices=event_categories,
         )
-        self.fields['event_locations_filter[]'] = forms.MultipleChoiceField(
+        self.fields['event_locations_filter'] = forms.MultipleChoiceField(
             required=False,
-            widget=forms.CheckboxSelectMultiple,
+            widget=CustomCheckboxSelectMultiple,
             choices=event_locations,
         )
