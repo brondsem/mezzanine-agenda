@@ -101,6 +101,7 @@ class CustomCheckboxChoiceInput(CheckboxChoiceInput):
         self.value = set(force_text(v) for v in self.value)
         self.name = self.name + "[]"
 
+
 class CustomCheckboxFieldRenderer(ChoiceFieldRenderer):
 
     choice_input_class = CheckboxChoiceInput
@@ -114,6 +115,14 @@ class CustomCheckboxSelectMultiple(CheckboxSelectMultiple):
 
     renderer = CustomCheckboxFieldRenderer
 
+    def get_renderer(self, name, value, attrs=None, choices=()):
+        """Returns an instance of the renderer."""
+        name = name + "[]"
+        if value is None:
+            value = self._empty_value
+        final_attrs = self.build_attrs(attrs)
+        choices = list(chain(self.choices, choices))
+        return self.renderer(name, value, final_attrs, choices)
 
 class EventFilterForm(EventCalendarForm):
 
