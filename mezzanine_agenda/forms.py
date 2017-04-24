@@ -1,6 +1,7 @@
 import ast
 from django.forms.widgets import RadioFieldRenderer, RendererMixin, Select, RadioChoiceInput
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 from mezzanine_agenda.models import *
 from mezzanine_agenda.utils import *
 from datetime import datetime
@@ -62,6 +63,9 @@ class CustomRadioFieldRenderer(RadioFieldRenderer):
                                                 self.attrs.copy(), choice, i)
                     output.append(format_html(self.inner_html,
                                               choice_value=force_text(w), sub_widgets=''))
+
+        output.insert(0, "<li>" + str(_(datetime.strptime(self.choices[0][0], '%Y-%m-%d').strftime("%B"))) + "</li>")
+        output.insert(len(output) ,  "<li>" + str(_(datetime.strptime(self.choices[len(self.choices) - 1][0], '%Y-%m-%d').strftime("%B"))) + "</li>")
         return format_html(self.outer_html,
                            id_attr=format_html(' id="{}"', id_) if id_ else '',
                            content=mark_safe('\n'.join(output)))
