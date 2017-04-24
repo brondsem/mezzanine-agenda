@@ -103,16 +103,16 @@ class EventListView(ListView):
                 events = events.exclude(keywords__keyword=exclude_tag)
 
         # Filter by locations
-        event_locations_filter = self.request.GET.getlist('event_locations_filter')
+        event_locations_filter = self.request.GET.getlist('event_locations_filter[]')
         if event_locations_filter:
             events = events.filter(location__title__in=event_locations_filter)
-            self.form_initial['event_locations_filter'] = event_locations_filter
+            self.form_initial['event_locations_filter[]'] = event_locations_filter
 
         # Filter by categories
-        event_categories_filter = self.request.GET.getlist('event_categories_filter')
+        event_categories_filter = self.request.GET.getlist('event_categories_filter[]')
         if event_categories_filter:
             events = events.filter(category__name__in=event_categories_filter)
-            self.form_initial['event_categories_filter'] = event_categories_filter
+            self.form_initial['event_categories_filter[]'] = event_categories_filter
 
         prefetch = ("keywords__keyword",)
         events = events.select_related("user").prefetch_related(*prefetch)

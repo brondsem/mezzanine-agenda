@@ -62,7 +62,6 @@ class CustomRadioFieldRenderer(RadioFieldRenderer):
                                                 self.attrs.copy(), choice, i)
                     output.append(format_html(self.inner_html,
                                               choice_value=force_text(w), sub_widgets=''))
-
         return format_html(self.outer_html,
                            id_attr=format_html(' id="{}"', id_) if id_ else '',
                            content=mark_safe('\n'.join(output)))
@@ -88,12 +87,12 @@ class EventFilterForm(forms.Form):
             widget=CustomRadioSelect,
             choices=events_day,
         )
-        self.fields['event_categories_filter'] = forms.MultipleChoiceField(
+        self.fields['event_categories_filter[]'] = forms.MultipleChoiceField(
             required=False,
             widget=forms.CheckboxSelectMultiple,
             choices=event_categories,
         )
-        self.fields['event_locations_filter'] = forms.MultipleChoiceField(
+        self.fields['event_locations_filter[]'] = forms.MultipleChoiceField(
             required=False,
             widget=forms.CheckboxSelectMultiple,
             choices=event_locations,
