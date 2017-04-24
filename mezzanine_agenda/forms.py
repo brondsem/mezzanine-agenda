@@ -72,14 +72,9 @@ class CustomRadioSelect(RendererMixin, Select):
     _empty_value = ''
 
 
-class EventFilterForm(forms.Form):
-
+class EventCalendarForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        super(EventFilterForm, self).__init__(*args, **kwargs)
-        event_categories = EventCategory.objects.all()
-        event_categories = [(cat.name, cat.name) for cat in event_categories]
-        event_locations = EventLocation.objects.distinct('title')
-        event_locations = [(loc.title, loc.title) for loc in event_locations]
+        super().__init__(*args, **kwargs)
         events_day = get_events_list_days_form()
 
         self.fields['event_day_filter'] = forms.ChoiceField(
@@ -87,6 +82,17 @@ class EventFilterForm(forms.Form):
             widget=CustomRadioSelect,
             choices=events_day,
         )
+
+
+class EventFilterForm(EventCalendarForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        event_categories = EventCategory.objects.all()
+        event_categories = [(cat.name, cat.name) for cat in event_categories]
+        event_locations = EventLocation.objects.distinct('title')
+        event_locations = [(loc.title, loc.title) for loc in event_locations]
+
         self.fields['event_categories_filter[]'] = forms.MultipleChoiceField(
             required=False,
             widget=forms.CheckboxSelectMultiple,
