@@ -3,7 +3,6 @@ from future.builtins import str
 from future.builtins import int
 from calendar import month_name, day_name, monthrange
 import ast
-
 from datetime import datetime, date, timedelta
 from itertools import chain
 from django.contrib.sites.models import Site
@@ -13,6 +12,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import *
 from django.views.generic.base import *
 from django.core import serializers
+from django.core.urlresolvers import reverse
+
 from icalendar import Calendar
 
 from mezzanine_agenda import __version__
@@ -246,7 +247,14 @@ def event_detail(request, slug, year=None, month=None, day=None,
     else:
         context_event = event
         child = None
-    context = {"event": context_event, "child": child, "editable_obj": event}
+
+    previous_event = Event.get_previous_by_start(event)
+    previous_event_url = reverse('event_detail', args=[previous_event.slug])
+    next_event = Event.get_next_by_start(event)
+    next_event_url = reverse('event_detail', args=[next_event.slug])
+
+    context = {"event": context_event, "child": child, "editable_obj": event,
+                "previous_event_url":previous_event_url, "next_event_url": next_event_url}
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
