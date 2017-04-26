@@ -305,5 +305,15 @@ def same_time_in_periods(periods):
     return is_same_time
 
 @register.filter
+def same_day_in_periods(periods):
+    is_same_day = True
+    if len(periods) > 2:
+        first_period = periods[0]
+        for period in periods:
+            if first_period.date_from.date != period.date_from.date:
+                is_same_day = False
+    return is_same_day
+
+@register.filter
 def tag_is_excluded(tag):
     return tag.slug in settings.EVENT_EXCLUDE_TAG_LIST
