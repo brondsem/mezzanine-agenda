@@ -5,6 +5,7 @@ from collections import OrderedDict
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+date_week = [_('MO'), _('TU'), _('WE'), _('TH'), _('FR'), _('SA'), _('SU')]
 
 def get_events_list_days_form():
     events = Event.objects.published().order_by('start')
