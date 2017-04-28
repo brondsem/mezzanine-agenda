@@ -248,10 +248,17 @@ def event_detail(request, slug, year=None, month=None, day=None,
         context_event = event
         child = None
 
-    previous_event = Event.get_previous_by_start(event)
-    previous_event_url = reverse('event_detail', args=[previous_event.slug])
-    next_event = Event.get_next_by_start(event)
-    next_event_url = reverse('event_detail', args=[next_event.slug])
+    try:
+        previous_event = Event.get_previous_by_start(event)
+        previous_event_url = reverse('event_detail', args=[previous_event.slug])
+    except:
+        previous_event_url = ''
+
+    try:
+        next_event = Event.get_next_by_start(event)
+        next_event_url = reverse('event_detail', args=[next_event.slug])
+    except:
+        next_event_url = ''
 
     context = {"event": context_event, "child": child, "editable_obj": event,
                 "previous_event_url":previous_event_url, "next_event_url": next_event_url}
