@@ -12,6 +12,7 @@ from geopy.geocoders import GoogleV3 as GoogleMaps
 from geopy.exc import GeocoderQueryError
 
 from icalendar import Event as IEvent
+from copy import deepcopy
 
 from mezzanine.conf import settings
 from mezzanine.core.fields import FileField, RichTextField, OrderField
@@ -77,21 +78,36 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
             raise ValidationError("Start must be sooner than end.")
 
     def save(self):
-        if self.parent:
+        # take some values from parent
+        if not self.parent is None:
             self.title = self.parent.title
-            self.description = self.parent.description
-            self.category = self.parent.category
-            self.mentions = self.parent.mentions
-            self.images = self.parent.images.all()
             self.user = self.parent.user
             self.status = self.parent.status
-            if not self.content:
-                self.content = self.parent.content
-            self.departments = self.parent.departments.all()
-            if not self.links:
-                self.links = self.parent.links
             if not self.location:
                 self.location = self.parent.location
+            if not self.description:
+                self.description = self.parent.description
+            if not self.category:
+                self.category = self.parent.category
+            if not self.mentions:
+                self.mentions = self.parent.mentions
+            if not self.images.all():
+                all_images = self.parent.images.select_related('event').all()
+                for image in all_images:
+                    image.pk = None
+                    image.save()
+                    image.event = self
+                    image.save()
+            if not self.user:
+                self.user = self.parent.user
+            if not self.status:
+                self.status = self.parent.status
+            if not self.content:
+                self.content = self.parent.content
+            if not self.departments:
+                self.departments = self.parent.departments.all()
+            if not self.links:
+                self.links = self.parent.links
         super(Event, self).save()
 
 
