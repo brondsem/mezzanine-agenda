@@ -88,10 +88,12 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
                 self.location = self.parent.location
             if not self.description:
                 self.description = self.parent.description
+                self.description_en = self.parent.description_en
             if not self.category:
                 self.category = self.parent.category
             if not self.mentions:
                 self.mentions = self.parent.mentions
+                self.mentions_en = self.parent.mentions_en
             if not self.images.all():
                 all_images = self.parent.images.select_related('event').all()
                 for image in all_images:
@@ -105,10 +107,16 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
                 self.status = self.parent.status
             if not self.content:
                 self.content = self.parent.content
+                self.content_en = self.parent.content_en
             if not self.departments:
                 self.departments = self.parent.departments.all()
-            if not self.links:
-                self.links = self.parent.links
+            if not self.links.all():
+                all_links = self.parent.links.all()
+                for link in all_links:
+                    link.pk = None
+                    link.save()
+                    link.event = self
+                    link.save()
         super(Event, self).save()
 
 
