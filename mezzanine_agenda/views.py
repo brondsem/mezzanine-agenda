@@ -212,8 +212,10 @@ def event_booking(request, slug, year=None, month=None, day=None,
     event = get_object_or_404(events, slug=slug)
     if event.is_full:
         return redirect('event_detail', slug=event.slug)
-
-    context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL % event.external_id}
+    shop_url = ''
+    if event.external_id:
+        shop_url = settings.EVENT_SHOP_URL % event.external_id
+    context = {"event": event, "editable_obj": event, "shop_url": shop_url, 'external_id': event.external_id }
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
