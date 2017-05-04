@@ -101,7 +101,6 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
                     parent_image.save()
                     parent_image.event = self
                     parent_image.save()
-
             if not self.user:
                 self.user = self.parent.user
             if not self.status:
@@ -109,8 +108,13 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
             if not self.content:
                 self.content = self.parent.content
                 self.content_en = self.parent.content_en
-            if not self.departments:
-                self.departments = self.parent.departments.all()
+            if not self.departments.all():
+                parent_departments = self.parent.departments.all()
+                for parent_department in parent_departments:
+                    parent_department.pk = None
+                    parent_department.save()
+                    parent_department.event = self
+                    parent_department.save()
             if not self.links.all():
                 all_links = self.parent.links.all()
                 for link in all_links:
