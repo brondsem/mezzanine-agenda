@@ -94,6 +94,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
             if not self.mentions:
                 self.mentions = self.parent.mentions
                 self.mentions_en = self.parent.mentions_en
+            self.images.clear()
             if not self.images.all():
                 all_images = self.parent.images.select_related('event').all()
                 for image in all_images:
