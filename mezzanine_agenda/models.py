@@ -78,6 +78,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
             raise ValidationError("Start must be sooner than end.")
 
     def save(self):
+        super(Event, self).save()
         # take some values from parent
         if not self.parent is None:
             self.title = self.parent.title
