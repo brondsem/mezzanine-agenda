@@ -307,7 +307,7 @@ def same_time_in_periods(periods):
 @register.filter
 def same_day_in_periods(periods):
     is_same_day = True
-    if len(periods) > 2:
+    if len(periods) >= 2:
         first_period = periods[0]
         for period in periods:
             if first_period.date_from.date != period.date_from.date:
