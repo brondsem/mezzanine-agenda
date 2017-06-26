@@ -48,6 +48,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
 
     location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
     facebook_event = models.BigIntegerField(_('Facebook ID'), blank=True, null=True)
+    shop = models.ForeignKey('EventShop', verbose_name=_('shop'), related_name='events', blank=True, null=True, on_delete=models.SET_NULL)
     external_id = models.IntegerField(_('External ID'), null=True, blank=True)
     is_full = models.BooleanField(verbose_name=_("Is Full"), default=False)
 
@@ -298,3 +299,19 @@ class EventCategory(models.Model):
     @property
     def slug(self):
         return slugify(self.__unicode__())
+
+
+class EventShop(models.Model):
+
+    name = models.CharField(_('name'), max_length=512)
+    description = models.TextField(_('description'), blank=True)
+    item_url = models.URLField(_('Item URL'), max_length=255)
+    pass_url = models.URLField(_('Pass URL'), max_length=255)
+    confirmation_url = models.URLField(_('Confirmation URL'), max_length=255)
+
+    class Meta:
+        verbose_name = _("Event shop")
+        verbose_name_plural = _("Event shops")
+
+    def __str__(self):
+        return self.name
