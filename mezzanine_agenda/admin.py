@@ -5,7 +5,7 @@ from copy import deepcopy
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from mezzanine_agenda.models import Event, EventLocation, EventPrice, EventCategory
+from mezzanine_agenda.models import Event, EventLocation, EventPrice, EventCategory, EventShop
 from mezzanine.conf import settings
 from mezzanine.core.admin import DisplayableAdmin, OwnableAdmin
 
@@ -59,3 +59,4 @@ admin.site.register(Event, EventAdmin)
 admin.site.register(EventLocation, EventLocationAdmin)
 admin.site.register(EventPrice)
 admin.site.register(EventCategory)
+admin.site.register(EventShop)

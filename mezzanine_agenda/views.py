@@ -196,18 +196,7 @@ def event_detail(request, slug, year=None, month=None, day=None,
     """
     events = Event.objects.published(for_user=request.user).select_related()
     event = get_object_or_404(events, slug=slug)
-    if event.parent:
-        context_event = event.parent
-        context_event.sub_title = event.sub_title
-        context_event.start = event.start
-        context_event.end = event.end
-        context_event.periods = event.periods.all()
-        context_event.location = event.location
-        child = event
-    else:
-        context_event = event
-        child = None
-    context = {"event": context_event, "child": child, "editable_obj": event}
+    context = {"event": event, }
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
@@ -223,8 +212,13 @@ def event_booking(request, slug, year=None, month=None, day=None,
     event = get_object_or_404(events, slug=slug)
     if event.is_full:
         return redirect('event_detail', slug=event.slug)
-
-    context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL % event.external_id}
+    shop_url = ''
+    if event.external_id:
+        if event.shop:
+            shop_url = event.shop.item_url % event.external_id
+        else:
+            shop_url = settings.EVENT_SHOP_URL % event.external_id
+    context = {"event": event, "editable_obj": event, "shop_url": shop_url, 'external_id': event.external_id }
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
