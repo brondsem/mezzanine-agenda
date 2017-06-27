@@ -214,7 +214,10 @@ def event_booking(request, slug, year=None, month=None, day=None,
         return redirect('event_detail', slug=event.slug)
     shop_url = ''
     if event.external_id:
-        shop_url = settings.EVENT_SHOP_URL % event.external_id
+        if event.shop:
+            shop_url = event.shop.item_url % event.external_id
+        else:
+            shop_url = settings.EVENT_SHOP_URL % event.external_id
     context = {"event": event, "editable_obj": event, "shop_url": shop_url, 'external_id': event.external_id }
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)

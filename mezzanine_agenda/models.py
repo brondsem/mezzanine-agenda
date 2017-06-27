@@ -305,9 +305,9 @@ class EventShop(models.Model):
 
     name = models.CharField(_('name'), max_length=512)
     description = models.TextField(_('description'), blank=True)
-    item_url = models.URLField(_('Item URL'), max_length=255)
-    pass_url = models.URLField(_('Pass URL'), max_length=255)
-    confirmation_url = models.URLField(_('Confirmation URL'), max_length=255)
+    item_url = models.CharField(_('Item URL'), max_length=255)
+    pass_url = models.CharField(_('Pass URL'), max_length=255, blank=True, null=True)
+    confirmation_url = models.CharField(_('Confirmation URL'), max_length=255, blank=True, null=True)
 
     class Meta:
         verbose_name = _("Event shop")
