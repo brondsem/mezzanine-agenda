@@ -15,7 +15,7 @@ from django.views.generic.base import *
 from icalendar import Calendar
 
 from mezzanine_agenda import __version__
-from mezzanine_agenda.models import Event, EventLocation
+from mezzanine_agenda.models import Event, EventLocation, EventShop
 from mezzanine_agenda.feeds import EventsRSS, EventsAtom
 from mezzanine.conf import settings
 from mezzanine.generic.models import Keyword
@@ -334,12 +334,33 @@ class LocationDetailView(DetailView):
         return context
 
 
-class PassView(TemplateView):
+class EventBookingPassView(TemplateView):
 
     template_name='agenda/event_iframe.html'
 
     def get_context_data(self, **kwargs):
-        context = super(PassView, self).get_context_data(**kwargs)
+        context = super(EventBookingPassView, self).get_context_data(**kwargs)
         context['url'] = settings.EVENT_PASS_URL
         context['title'] = 'Pass'
+        return context
+
+
+class EventBookingGlobalConfirmationView(TemplateView):
+
+    template_name = "agenda/event_booking_confirmation.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(EventBookingGlobalConfirmationView, self).get_context_data(**kwargs)
+        context['confirmation_url'] = settings.EVENT_CONFIRMATION_URL % kwargs['transaction_id']
+        return context
+
+
+class EventBookingShopConfirmationView(DetailView):
+
+    model = EventShop
+    template_name = "agenda/event_booking_confirmation.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(EventBookingShopConfirmationView, self).get_context_data(**kwargs)
+        context['confirmation_url'] = self.get_object().confirmation_url
         return context
