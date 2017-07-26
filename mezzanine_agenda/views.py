@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 from future.builtins import str
 from future.builtins import int
 from calendar import month_name, day_name, monthrange
-
 from datetime import datetime, date, timedelta
 
 from django.contrib.sites.models import Site
@@ -15,7 +14,7 @@ from django.core import serializers
 from icalendar import Calendar
 
 from mezzanine_agenda import __version__
-from mezzanine_agenda.models import Event, EventLocation, EventShop
+from mezzanine_agenda.models import Event, EventLocation, EventShop, Season
 from mezzanine_agenda.feeds import EventsRSS, EventsAtom
 from mezzanine.conf import settings
 from mezzanine.generic.models import Keyword
@@ -161,26 +160,38 @@ class ArchiveListView(ListView):
     template_name = "agenda/event_list.html"
     context_object_name = 'events'
 
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if self.kwargs['year'] is None:
+            curr_year = date.today().year
+            response = redirect('event_list_year', year=curr_year)
+        return response
+
     def get_queryset(self, tag=None):
 
         settings.use_editable()
         self.templates = self.template_name
         self.day_date = None
         events = None
-        self.year = None if "year" not in self.kwargs else self.kwargs['year']
+        date_now = datetime.now()
+        self.year = date_now.year if ("year" not in self.kwargs or self.kwargs['year'] is None) else self.kwargs['year']
         self.month = None if "month" not in self.kwargs else self.kwargs['month']
         self.day = None if "day" not in self.kwargs else self.kwargs['day']
-
+        digit_year = int(self.year)
         events = Event.objects.published(for_user=self.request.user)
-
         if self.year is not None:
-            date_now = datetime.now()
-            digit_year = int(self.year)
-            if date_now.year == digit_year or digit_year == date_now.year - 1:
+            # we suppose that self.year corresponds to start year of a season
+            season, created = Season.objects.get_or_create(
+                start__year=digit_year,
+                defaults={'title' : 'Season ' + str(self.year) + '-' + str(digit_year + 1),
+                          'start' : date(digit_year, 7, 31),
+                          'end' : date(digit_year + 1, 8, 1)})
+            # if current season, max date is the current date, not whole season
+            if date_now.year == season.start.year or digit_year == season.end.year:
                 date_max = date_now
             else:
-                date_max = date(digit_year+1, 7, 31)
-            events = events.filter(Q(start__gt=date(int(self.year), 8, 1)), Q(start__lt=date_max)).order_by("-start")
+                date_max = season.end
+            events = events.filter(start__range=[season.start, date_max]).order_by("-start")
 
             if self.month is not None:
                 digit_month = int(self.month)
@@ -199,11 +210,7 @@ class ArchiveListView(ListView):
                     raise Http404()
                 if self.day is not None:
                     events = events.filter(start__day=self.day)
-                    self.day_date = date(year=int(self.year), month=int(month_orig), day=int(self.day))
-
-        events = paginate(events, self.request.GET.get("page", 1),
-                              settings.EVENT_PER_PAGE,
-                              settings.MAX_PAGING_LINKS)
+                    self.day_date = date(year=digit_year, month=int(month_orig), day=int(self.day))
 
         return events
 

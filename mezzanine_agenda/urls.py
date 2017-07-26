@@ -4,9 +4,9 @@ from django.conf.urls import url
 
 from mezzanine.conf import settings
 from mezzanine_agenda.views import *
-
 # Trailing slash for urlpatterns based on setup.
 _slash = "/" if settings.APPEND_SLASH else ""
+
 
 # Agenda patterns.
 urlpatterns = [
@@ -34,7 +34,7 @@ urlpatterns = [
         ArchiveListView.as_view(), name="event_list_month"),
     url("^archive/(?P<year>\d{4})/(?P<month>\d{1,2})/calendar.ics$",
         icalendar, name="icalendar_month"),
-    url("^archive/(?P<year>\d{4})%s$" % _slash,
+    url(r'^archive(?:/(?P<year>\d{4}))?/$',
         ArchiveListView.as_view(), name="event_list_year"),
     url("^archive/(?P<year>\d{4})/calendar.ics$",
         icalendar, name="icalendar_year"),

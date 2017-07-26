@@ -315,3 +315,17 @@ class EventShop(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Season(models.Model):
+
+    title = models.CharField(_('name'), max_length=512)
+    start = models.DateField(_('start'))
+    end = models.DateField(_('end'))
+
+    class Meta:
+        verbose_name = _("Season")
+        verbose_name_plural = _("Seasons")
+
+    def __str__(self):
+        return self.title
