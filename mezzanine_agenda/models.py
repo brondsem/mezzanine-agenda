@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from future.builtins import str
 
 from django.db import models
+from django.db.models import Q
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -323,9 +324,23 @@ class Season(models.Model):
     start = models.DateField(_('start'))
     end = models.DateField(_('end'))
 
+    def clean(self):
+        cleaned_data = super(Season, self).clean()
+        queryset = Season.objects.filter(
+                    Q(start__startswith=self.start.strftime('%Y'))
+                      and Q(end__startswith=self.end.strftime('%Y')))
+
+        if not self.id is None:
+            queryset = queryset.exclude(id=self.id)
+
+        if queryset.exists():
+            raise ValidationError(_('This season already exists.'))
+
+
     class Meta:
         verbose_name = _("Season")
         verbose_name_plural = _("Seasons")
+
 
     def __str__(self):
         return self.title
