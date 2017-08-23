@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from future.builtins import str
 from future.builtins import int
 from calendar import month_name, day_name, monthrange
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 
 from django.contrib.sites.models import Site
 from django.db.models import Q
@@ -189,8 +189,12 @@ class ArchiveListView(ListView):
             # if current season, max date is the current date, not whole season
             if date_now.year == season.start.year or digit_year == season.end.year:
                 date_max = date_now
+                date_max = date_max.replace(hour=23, minute=59, second=59)
             else:
                 date_max = season.end
+                date_max = datetime.combine(date_max, time(23, 59, 59))
+
+            season.start = datetime.combine(season.start, time(0, 0, 0))
             events = events.filter(start__range=[season.start, date_max]).order_by("-start")
 
             if self.month is not None:
