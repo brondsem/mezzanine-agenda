@@ -55,7 +55,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
 
     brochure = FileField(_('brochure'), upload_to='brochures', max_length=1024, blank=True)
     prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'), related_name='events', blank=True)
-    no_price_comments = RichTextField(_('No price comments'), blank=True, null=True)
+    no_price_comments = RichTextField(_('Price comments'), blank=True, null=True)
     mentions = models.TextField(_('mentions'), blank=True)
 
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"), default=False)
