@@ -1,5 +1,6 @@
 from django import forms
 from mezzanine_agenda.models import *
+from dal import autocomplete
 
 
 class EventFilterForm(forms.Form):
@@ -20,3 +21,16 @@ class EventFilterForm(forms.Form):
             widget=forms.CheckboxSelectMultiple,
             choices=event_locations,
         )
+
+
+class EventAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = EventPrice
+        fields = ('__all__')
+        widgets = {
+            'prices': autocomplete.ModelSelect2Multiple(
+                url='event-price-autocomplete',
+                attrs={'data-html': True}
+            )
+        }

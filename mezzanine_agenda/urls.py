@@ -71,5 +71,6 @@ urlpatterns = [
     url("^locations/$", LocationListView.as_view(), name="location-list"),
     url("^locations/(?P<slug>.*)%s$" % _slash,
         LocationDetailView.as_view(), name="location-detail"),
-
+    url("^event-price-autocomplete$",
+        EventPriceAutocompleteView.as_view(), name="event-price-autocomplete"),
 ]

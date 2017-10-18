@@ -12,9 +12,10 @@ from django.views.generic import *
 from django.views.generic.base import *
 from django.core import serializers
 from icalendar import Calendar
+from dal import autocomplete
 
 from mezzanine_agenda import __version__
-from mezzanine_agenda.models import Event, EventLocation, EventShop, Season
+from mezzanine_agenda.models import Event, EventLocation, EventShop, Season, EventPrice
 from mezzanine_agenda.feeds import EventsRSS, EventsAtom
 from mezzanine.conf import settings
 from mezzanine.generic.models import Keyword
@@ -24,6 +25,7 @@ from mezzanine.utils.models import get_user_model
 from mezzanine.utils.sites import current_site_id
 
 from mezzanine_agenda.forms import EventFilterForm
+
 
 User = get_user_model()
 
@@ -400,3 +402,28 @@ class EventBookingShopConfirmationView(DetailView):
         context = super(EventBookingShopConfirmationView, self).get_context_data(**kwargs)
         context['confirmation_url'] = self.get_object().confirmation_url
         return context
+
+
+class EventPriceAutocompleteView(autocomplete.Select2QuerySetView):
+
+    def get_result_label(self, item):
+        desc = ""
+        if hasattr(item, "event_price_description"):
+            desc = ' - ' + item.event_price_description.description
+        return str(item.value) + item.unit + desc
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated():
+            return EventPrice.objects.none()
+
+        qs = EventPrice.objects.all()
+
+        value = self.forwarded.get('value', None)
+
+        if value:
+            qs = qs.filter(value=value)
+
+        if self.q:
+            qs = qs.filter(value__istartswith=self.q)
+
+        return qs

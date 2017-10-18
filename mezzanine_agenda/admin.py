@@ -1,11 +1,13 @@
 from __future__ import unicode_literals
 
 from copy import deepcopy
+from mezzanine.conf import settings
 
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine_agenda.models import Event, EventLocation, EventPrice, EventCategory, EventShop, Season
+from mezzanine_agenda.forms import EventAdminForm
 from mezzanine.conf import settings
 from mezzanine.core.admin import DisplayableAdmin, OwnableAdmin
 
@@ -28,6 +30,7 @@ class EventAdmin(DisplayableAdmin, OwnableAdmin):
         list_display.insert(0, "admin_thumb")
     list_filter = deepcopy(DisplayableAdmin.list_filter) + ("location",)
     ordering = ('-start',)
+    form = EventAdminForm
 
     def save_form(self, request, form, change):
         """
