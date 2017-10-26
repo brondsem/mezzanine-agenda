@@ -316,4 +316,5 @@ def same_day_in_periods(periods):
 
 @register.filter
 def tag_is_excluded(tag):
-    return tag.slug in settings.EVENT_EXCLUDE_TAG_LIST
+    if hasattr(tag, 'slug'):
+        return tag.slug in settings.EVENT_EXCLUDE_TAG_LIST
