@@ -20,18 +20,6 @@ setup(name='mezzanine-agenda',
     url='https://github.com/jpells/mezzanine-agenda',
     packages=find_packages(),
     include_package_data=True,
-    setup_requires=[
-        'setuptools_git>=0.3',
-    ],
-    install_requires=[
-        'mezzanine',
-        'icalendar',
-        'geopy',
-        'pytz',
-        'dal',
-        'dal_select2',
-        'dal_queryset_sequence',
-    ],
     classifiers = [
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
