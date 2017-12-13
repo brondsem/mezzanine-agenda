@@ -265,6 +265,9 @@ class EventLocation(Slugged):
         self.clean()
         super(EventLocation, self).save()
 
+    def __str__(self):
+        return str(self.title + " - " + self.room)    
+
     @models.permalink
     def get_absolute_url(self):
         return ("event_list_location", (), {"location": self.slug})
