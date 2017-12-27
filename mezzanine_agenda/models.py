@@ -281,7 +281,7 @@ class EventPrice(models.Model):
 
     class Meta:
         verbose_name = _("Event price")
-        verbose_name_plural = _("Event pricies")
+        verbose_name_plural = _("Event prices")
         ordering = ('-value',)
 
     def __str__(self):
