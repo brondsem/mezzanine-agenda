@@ -223,7 +223,7 @@ def google_static_map(obj, width, height, zoom):
         scale = 2
     else:
         scale = 1
-    return mark_safe("<img src='http://maps.googleapis.com/maps/api/staticmap?size={width}x{height}&scale={scale}&format=png&markers={marker}&sensor=false&zoom={zoom}' width='{width}' height='{height}' />".format(**locals()))
+    return mark_safe("<img src='//maps.googleapis.com/maps/api/staticmap?size={width}x{height}&scale={scale}&format=png&markers={marker}&sensor=false&zoom={zoom}' width='{width}' height='{height}' />".format(**locals()))
 
 
 @register.simple_tag(takes_context=True)
@@ -289,18 +289,32 @@ def subtract(value, arg):
 
 @register.filter
 def same_time_in_periods(periods):
+    is_same_time = True
     if periods:
-        last_time = periods[0].date_from.time()
+        last_time_from = periods[0].date_from.time()
+        last_time_to = None
+        if periods[0].date_to:
+            last_time_to = periods[0].date_to.time()
         for period in periods:
-            if period.date_from.time() != last_time:
-                return False
-        return True
-    return False
+            if period.date_from.time() != last_time_from:
+                is_same_time = False
+            if last_time_to and period.date_to:
+                if period.date_to.time() != last_time_to:
+                    is_same_time = False
+
+    return is_same_time
+
+@register.filter
+def same_day_in_periods(periods):
+    is_same_day = True
+    if len(periods) >= 2:
+        first_period = periods[0]
+        for period in periods:
+            if first_period.date_from.date != period.date_from.date:
+                is_same_day = False
+    return is_same_day
 
 @register.filter
 def tag_is_excluded(tag):
-    return tag.slug in settings.EVENT_EXCLUDE_TAG_LIST
-
-@register.filter
-def period_is_more_than_hours(period, hours):
-    return (period.date_to - period.date_from).seconds > hours*3600
+    if hasattr(tag, 'slug'):
+        return tag.slug in settings.EVENT_EXCLUDE_TAG_LIST

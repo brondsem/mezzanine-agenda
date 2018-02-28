@@ -3,7 +3,7 @@ from future.builtins import str
 from future.builtins import int
 from calendar import month_name, day_name, monthrange
 import ast
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 from itertools import chain
 from django.contrib.sites.models import Site
 from django.db.models import Q
@@ -15,9 +15,10 @@ from django.core import serializers
 from django.core.urlresolvers import reverse
 
 from icalendar import Calendar
+from dal import autocomplete
 
 from mezzanine_agenda import __version__
-from mezzanine_agenda.models import Event, EventLocation
+from mezzanine_agenda.models import Event, EventLocation, EventShop, Season, EventPrice
 from mezzanine_agenda.feeds import EventsRSS, EventsAtom
 from mezzanine.conf import settings
 from mezzanine.generic.models import Keyword
@@ -27,6 +28,7 @@ from mezzanine.utils.models import get_user_model
 from mezzanine.utils.sites import current_site_id
 
 from mezzanine_agenda.forms import EventFilterForm
+
 
 User = get_user_model()
 
@@ -158,7 +160,8 @@ class EventListView(ListView):
     def get_context_data(self, *args, **kwargs):
         context = super(EventListView, self).get_context_data(**kwargs)
         context.update({"year": self.year, "month": self.month, "day": self.day, "week": self.week,
-               "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date})
+               "tag": self.tag, "location": self.location, "author": self.author, 'day_date': self.day_date, 'is_archive' : False})
+
         context['filter_form'] = EventFilterForm(initial=self.form_initial)
         if settings.PAST_EVENTS:
             context['past_events'] = Event.objects.filter(end__lt=datetime.now()).order_by("start")
@@ -176,26 +179,42 @@ class ArchiveListView(ListView):
     template_name = "agenda/event_list.html"
     context_object_name = 'events'
 
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if self.kwargs['year'] is None:
+            curr_year = date.today().year
+            response = redirect('event_list_year', year=curr_year)
+        return response
+
     def get_queryset(self, tag=None):
 
         settings.use_editable()
         self.templates = self.template_name
         self.day_date = None
         events = None
-        self.year = None if "year" not in self.kwargs else self.kwargs['year']
+        date_now = datetime.now()
+        self.year = date_now.year if ("year" not in self.kwargs or self.kwargs['year'] is None) else self.kwargs['year']
         self.month = None if "month" not in self.kwargs else self.kwargs['month']
         self.day = None if "day" not in self.kwargs else self.kwargs['day']
-
+        digit_year = int(self.year)
         events = Event.objects.published(for_user=self.request.user)
-
         if self.year is not None:
-            date_now = datetime.now()
-            digit_year = int(self.year)
-            if date_now.year == digit_year:
+            # we suppose that self.year corresponds to start year of a season
+            season, created = Season.objects.get_or_create(
+                start__year=digit_year,
+                defaults={'title' : 'Season ' + str(self.year) + '-' + str(digit_year + 1),
+                          'start' : date(digit_year, 7, 31),
+                          'end' : date(digit_year + 1, 8, 1)})
+            # if current season, max date is the current date, not whole season
+            if date_now.year == season.start.year or digit_year == season.end.year:
                 date_max = date_now
+                date_max = date_max.replace(hour=23, minute=59, second=59)
             else:
-                date_max = date(digit_year+1, 7, 31)
-            events = events.filter(Q(start__gt=date(int(self.year), 8, 1)), Q(start__lt=date_max)).order_by("-start")
+                date_max = season.end
+                date_max = datetime.combine(date_max, time(23, 59, 59))
+
+            season.start = datetime.combine(season.start, time(0, 0, 0))
+            events = events.filter(start__range=[season.start, date_max]).order_by("-start")
 
             if self.month is not None:
                 digit_month = int(self.month)
@@ -214,11 +233,7 @@ class ArchiveListView(ListView):
                     raise Http404()
                 if self.day is not None:
                     events = events.filter(start__day=self.day)
-                    self.day_date = date(year=int(self.year), month=int(month_orig), day=int(self.day))
-
-        events = paginate(events, self.request.GET.get("page", 1),
-                              settings.EVENT_PER_PAGE,
-                              settings.MAX_PAGING_LINKS)
+                    self.day_date = date(year=digit_year, month=int(month_orig), day=int(self.day))
 
         return events
 
@@ -236,32 +251,7 @@ def event_detail(request, slug, year=None, month=None, day=None,
     """
     events = Event.objects.published(for_user=request.user).select_related()
     event = get_object_or_404(events, slug=slug)
-    if event.parent:
-        context_event = event.parent
-        context_event.sub_title = event.sub_title
-        context_event.start = event.start
-        context_event.end = event.end
-        context_event.periods = event.periods.all()
-        context_event.location = event.location
-        child = event
-    else:
-        context_event = event
-        child = None
-
-    try:
-        previous_event = Event.get_previous_by_start(event)
-        previous_event_url = reverse('event_detail', args=[previous_event.slug])
-    except:
-        previous_event_url = ''
-
-    try:
-        next_event = Event.get_next_by_start(event)
-        next_event_url = reverse('event_detail', args=[next_event.slug])
-    except:
-        next_event_url = ''
-
-    context = {"event": context_event, "child": child, "editable_obj": event,
-                "previous_event_url":previous_event_url, "next_event_url": next_event_url}
+    context = {"event": event, }
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
@@ -277,8 +267,13 @@ def event_booking(request, slug, year=None, month=None, day=None,
     event = get_object_or_404(events, slug=slug)
     if event.is_full:
         return redirect('event_detail', slug=event.slug)
-
-    context = {"event": event, "editable_obj": event, "shop_url": settings.EVENT_SHOP_URL % event.external_id}
+    shop_url = ''
+    if event.external_id:
+        if event.shop:
+            shop_url = event.shop.item_url % event.external_id
+        else:
+            shop_url = settings.EVENT_SHOP_URL % event.external_id
+    context = {"event": event, "editable_obj": event, "shop_url": shop_url, 'external_id': event.external_id }
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
@@ -394,12 +389,58 @@ class LocationDetailView(DetailView):
         return context
 
 
-class PassView(TemplateView):
+class EventBookingPassView(TemplateView):
 
     template_name='agenda/event_iframe.html'
 
     def get_context_data(self, **kwargs):
-        context = super(PassView, self).get_context_data(**kwargs)
+        context = super(EventBookingPassView, self).get_context_data(**kwargs)
         context['url'] = settings.EVENT_PASS_URL
         context['title'] = 'Pass'
         return context
+
+
+class EventBookingGlobalConfirmationView(TemplateView):
+
+    template_name = "agenda/event_booking_confirmation.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(EventBookingGlobalConfirmationView, self).get_context_data(**kwargs)
+        context['confirmation_url'] = settings.EVENT_CONFIRMATION_URL % kwargs['transaction_id']
+        return context
+
+
+class EventBookingShopConfirmationView(DetailView):
+
+    model = EventShop
+    template_name = "agenda/event_booking_confirmation.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(EventBookingShopConfirmationView, self).get_context_data(**kwargs)
+        context['confirmation_url'] = self.get_object().confirmation_url
+        return context
+
+
+class EventPriceAutocompleteView(autocomplete.Select2QuerySetView):
+
+    def get_result_label(self, item):
+        desc = ""
+        if hasattr(item, "event_price_description"):
+            desc = ' - ' + item.event_price_description.description
+        return str(item.value) + item.unit + desc
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated():
+            return EventPrice.objects.none()
+
+        qs = EventPrice.objects.all()
+
+        value = self.forwarded.get('value', None)
+
+        if value:
+            qs = qs.filter(value=value)
+
+        if self.q:
+            qs = qs.filter(value__istartswith=self.q)
+
+        return qs

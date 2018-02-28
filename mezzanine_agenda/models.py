@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from future.builtins import str
 
 from django.db import models
+from django.db.models import Q
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -12,6 +13,7 @@ from geopy.geocoders import GoogleV3 as GoogleMaps
 from geopy.exc import GeocoderQueryError
 
 from icalendar import Event as IEvent
+from copy import deepcopy
 
 from mezzanine.conf import settings
 from mezzanine.core.fields import FileField, RichTextField, OrderField
@@ -47,12 +49,13 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
 
     location = models.ForeignKey("EventLocation", blank=True, null=True, on_delete=models.SET_NULL)
     facebook_event = models.BigIntegerField(_('Facebook ID'), blank=True, null=True)
+    shop = models.ForeignKey('EventShop', verbose_name=_('shop'), related_name='events', blank=True, null=True, on_delete=models.SET_NULL)
     external_id = models.IntegerField(_('External ID'), null=True, blank=True)
-    is_full = models.BooleanField(verbose_name=_("Is Full"), default=False)    
+    is_full = models.BooleanField(verbose_name=_("Is Full"), default=False)
 
     brochure = FileField(_('brochure'), upload_to='brochures', max_length=1024, blank=True)
     prices = models.ManyToManyField('EventPrice', verbose_name=_('prices'), related_name='events', blank=True)
-    no_price_comments = models.CharField(_('No price comments'), max_length=512, blank=True, null=True)
+    no_price_comments = RichTextField(_('Price comments'), blank=True, null=True)
     mentions = models.TextField(_('mentions'), blank=True)
 
     allow_comments = models.BooleanField(verbose_name=_("Allow comments"), default=False)
@@ -77,13 +80,50 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
             raise ValidationError("Start must be sooner than end.")
 
     def save(self):
-        if self.parent:
+        super(Event, self).save()
+        # take some values from parent
+        if not self.parent is None:
             self.title = self.parent.title
             self.user = self.parent.user
             self.status = self.parent.status
-            self.content = self.parent.content
             if not self.location:
                 self.location = self.parent.location
+            if not self.description:
+                self.description = self.parent.description
+                self.description_en = self.parent.description_en
+            if not self.category:
+                self.category = self.parent.category
+            if not self.mentions:
+                self.mentions = self.parent.mentions
+                self.mentions_en = self.parent.mentions_en
+            parent_images = self.parent.images.select_related('event').all()
+            for parent_image in parent_images:
+                if not self.images.filter(file=parent_image.file, type=parent_image.type):
+                    parent_image.pk = None
+                    parent_image.save()
+                    parent_image.event = self
+                    parent_image.save()
+            if not self.user:
+                self.user = self.parent.user
+            if not self.status:
+                self.status = self.parent.status
+            if not self.content:
+                self.content = self.parent.content
+                self.content_en = self.parent.content_en
+            if not self.departments.all():
+                parent_departments = self.parent.departments.all()
+                for parent_department in parent_departments:
+                    parent_department.pk = None
+                    parent_department.save()
+                    parent_department.event = self
+                    parent_department.save()
+            if not self.links.all():
+                all_links = self.parent.links.all()
+                for link in all_links:
+                    link.pk = None
+                    link.save()
+                    link.event = self
+                    link.save()
         super(Event, self).save()
 
 
@@ -225,6 +265,9 @@ class EventLocation(Slugged):
         self.clean()
         super(EventLocation, self).save()
 
+    def __str__(self):
+        return str(self.title + " - " + self.room)    
+
     @models.permalink
     def get_absolute_url(self):
         return ("event_list_location", (), {"location": self.slug})
@@ -238,7 +281,7 @@ class EventPrice(models.Model):
 
     class Meta:
         verbose_name = _("Event price")
-        verbose_name_plural = _("Event pricies")
+        verbose_name_plural = _("Event prices")
         ordering = ('-value',)
 
     def __str__(self):
@@ -260,3 +303,47 @@ class EventCategory(models.Model):
     @property
     def slug(self):
         return slugify(self.__unicode__())
+
+
+class EventShop(models.Model):
+
+    name = models.CharField(_('name'), max_length=512)
+    description = models.TextField(_('description'), blank=True)
+    item_url = models.CharField(_('Item URL'), max_length=255)
+    pass_url = models.CharField(_('Pass URL'), max_length=255, blank=True, null=True)
+    confirmation_url = models.CharField(_('Confirmation URL'), max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Event shop")
+        verbose_name_plural = _("Event shops")
+
+    def __str__(self):
+        return self.name
+
+
+class Season(models.Model):
+
+    title = models.CharField(_('name'), max_length=512)
+    start = models.DateField(_('start'))
+    end = models.DateField(_('end'))
+
+    def clean(self):
+        cleaned_data = super(Season, self).clean()
+        queryset = Season.objects.filter(
+                    Q(start__startswith=self.start.strftime('%Y'))
+                      and Q(end__startswith=self.end.strftime('%Y')))
+
+        if not self.id is None:
+            queryset = queryset.exclude(id=self.id)
+
+        if queryset.exists():
+            raise ValidationError(_('This season already exists.'))
+
+
+    class Meta:
+        verbose_name = _("Season")
+        verbose_name_plural = _("Seasons")
+
+
+    def __str__(self):
+        return self.title

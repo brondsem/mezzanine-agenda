@@ -4,9 +4,9 @@ from django.conf.urls import url
 
 from mezzanine.conf import settings
 from mezzanine_agenda.views import *
-
 # Trailing slash for urlpatterns based on setup.
 _slash = "/" if settings.APPEND_SLASH else ""
+
 
 # Agenda patterns.
 urlpatterns = [
@@ -34,7 +34,7 @@ urlpatterns = [
         ArchiveListView.as_view(), name="event_list_month"),
     url("^archive/(?P<year>\d{4})/(?P<month>\d{1,2})/calendar.ics$",
         icalendar, name="icalendar_month"),
-    url("^archive/(?P<year>\d{4})%s$" % _slash,
+    url(r'^archive(?:/(?P<year>\d{4}))?/$',
         ArchiveListView.as_view(), name="event_list_year"),
     url("^archive/(?P<year>\d{4})/calendar.ics$",
         icalendar, name="icalendar_year"),
@@ -59,15 +59,20 @@ urlpatterns = [
     url("^calendar.ics$", icalendar, name="icalendar"),
     url("^(?P<slug>.*)/detail%s$" % _slash, event_detail,
         name="event_detail"),
+    url("^$", EventListView.as_view(), name="event_list"),
     url("^(?P<slug>.*)/booking%s$" % _slash, event_booking,
         name="event_booking"),
-    url("^$", EventListView.as_view(), name="event_list"),
+    url("^shop/(?P<pk>.*)/confirmation%s$" % _slash,
+        EventBookingShopConfirmationView.as_view(), name="event_booking_shop_confirmation"),
+    url("^confirmation/(?P<transaction_id>[0-9]*)$",
+        EventBookingGlobalConfirmationView.as_view(), name="event_booking_global_confirmation"),
+    url("^pass%s$" % _slash,
+            EventBookingPassView.as_view(), name="event_pass"),
     url("^archive/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})%s$" % _slash,
         ArchiveListView.as_view(), name="archive_event_list_day"),
     url("^locations/$", LocationListView.as_view(), name="location-list"),
     url("^locations/(?P<slug>.*)%s$" % _slash,
         LocationDetailView.as_view(), name="location-detail"),
-    url("^pass%s$" % _slash,
-        PassView.as_view(), name="event_pass"),
-
+    url("^event-price-autocomplete$",
+        EventPriceAutocompleteView.as_view(), name="event-price-autocomplete"),
 ]

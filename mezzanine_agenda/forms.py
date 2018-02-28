@@ -16,6 +16,7 @@ from django.utils.html import format_html
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from pprint import pprint
+from dal import autocomplete
 
 
 class CustomRadioChoiceInput(RadioChoiceInput):
@@ -143,3 +144,16 @@ class EventFilterForm(EventCalendarForm):
             widget=CustomCheckboxSelectMultiple,
             choices=event_locations,
         )
+
+
+class EventAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = EventPrice
+        fields = ('__all__')
+        widgets = {
+            'prices': autocomplete.ModelSelect2Multiple(
+                url='event-price-autocomplete',
+                attrs={'data-html': True}
+            )
+        }
