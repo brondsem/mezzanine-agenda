@@ -87,7 +87,11 @@ class CustomRadioSelect(RendererMixin, Select):
 class EventCalendarForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        events_day = get_events_list_days_form()
+        event_locations = []
+        if 'initial' in kwargs:
+            if 'event_locations_filter' in kwargs['initial'] :
+                event_locations = kwargs['initial']['event_locations_filter']
+        events_day = get_events_list_days_form(event_locations)
 
         self.fields['event_day_filter'] = forms.ChoiceField(
             required=False,
