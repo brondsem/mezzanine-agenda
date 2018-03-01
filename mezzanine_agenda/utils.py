@@ -3,6 +3,7 @@ import pandas as pd
 from collections import OrderedDict
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 date_week = [_('MO'), _('TU'), _('WE'), _('TH'), _('FR'), _('SA'), _('SU')]
 
@@ -52,5 +53,19 @@ def get_events_list_days_form(locations=[]):
         label = mark_safe("<span class='"+weekend_class+"'>"+ str(_(day_v.weekday_name[:2].upper())) +"</span> " + str(day_v.day))
         events_by_day.append((day_k, {'label': label, 'disabled': disabled}))
 
-
+    
     return events_by_day
+
+
+def categorie_manager(categories=[]):
+    frt_categories = []
+    if hasattr(settings, 'CATEGORY_TO_HIGHLIGHT'):
+        for category in categories:
+            if category[0] == settings.CATEGORY_TO_HIGHLIGHT:
+                frt_categories.append((category[0], {'class' : settings.CATEGORY_TO_HIGHLIGHT.lower(), 'label' : category[1]}))
+            else :
+                frt_categories.append(category)    
+    else :
+        frt_categories = categories
+    return frt_categories        
+

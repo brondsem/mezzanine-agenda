@@ -15,7 +15,6 @@ from datetime import datetime
 from django.utils.html import format_html
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
-from pprint import pprint
 from dal import autocomplete
 
 
@@ -113,7 +112,44 @@ class CustomCheckboxFieldRenderer(ChoiceFieldRenderer):
 
 
 class CustomCheckboxFieldRenderer(CustomCheckboxFieldRenderer):
-    pass
+    
+
+    def render(self):
+        """
+        Outputs a <ul> for this set of choice fields.
+        If an id was given to the field, it is applied to the <ul> (each
+        item in the list will get an id of `$id_$i`).
+        """
+        id_ = self.attrs.get('id')
+        output = []
+        for i, choice in enumerate(self.choices):
+            choice_value, choice_label = choice
+            if isinstance(choice_label, (tuple, list)):
+                attrs_plus = self.attrs.copy()
+                if id_:
+                    attrs_plus['id'] += '_{}'.format(i)
+                sub_ul_renderer = self.__class__(
+                    name=self.name,
+                    value=self.value,
+                    attrs=attrs_plus,
+                    choices=choice_label,
+                )
+                sub_ul_renderer.choice_input_class = self.choice_input_class
+                output.append(format_html(self.inner_html, choice_value=choice_value,
+                                          sub_widgets=sub_ul_renderer.render()))
+            else:
+                if "label" in choice_label:
+                    if 'class' in choice_label:
+                        self.attrs['class'] = choice_label['class']
+                    choice = [choice[0], choice_label['label']]
+
+                w = self.choice_input_class(self.name, self.value,
+                                            self.attrs.copy(), choice, i)
+                output.append(format_html(self.inner_html,
+                                          choice_value=force_text(w), sub_widgets=''))
+        return format_html(self.outer_html,
+                           id_attr=format_html(' id="{}"', id_) if id_ else '',
+                           content=mark_safe('\n'.join(output)))
 
 
 class CustomCheckboxSelectMultiple(CheckboxSelectMultiple):
@@ -141,7 +177,7 @@ class EventFilterForm(EventCalendarForm):
         self.fields['event_categories_filter'] = forms.MultipleChoiceField(
             required=False,
             widget=CustomCheckboxSelectMultiple,
-            choices=event_categories,
+            choices=categorie_manager(event_categories),
         )
         self.fields['event_locations_filter'] = forms.MultipleChoiceField(
             required=False,
