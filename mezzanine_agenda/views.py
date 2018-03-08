@@ -251,7 +251,20 @@ def event_detail(request, slug, year=None, month=None, day=None,
     """
     events = Event.objects.published(for_user=request.user).select_related()
     event = get_object_or_404(events, slug=slug)
-    context = {"event": event, }
+    
+    try:
+        previous_event = Event.get_previous_by_start(event)
+        previous_event_url = reverse('event_detail', args=[previous_event.slug])
+    except:
+        previous_event_url = ''
+
+    try:
+        next_event = Event.get_next_by_start(event)
+        next_event_url = reverse('event_detail', args=[next_event.slug])
+    except:
+        next_event_url = ''
+
+    context = {"event": event, "previous_event_url":previous_event_url, "next_event_url": next_event_url}
     templates = [u"agenda/event_detail_%s.html" % str(slug), template]
     return render(request, templates, context)
 
