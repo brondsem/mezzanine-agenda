@@ -39,7 +39,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     """
     An event.
     """
-
+    search_fields = {"title": 50, "content": 25}
     parent = models.ForeignKey('Event', verbose_name=_('parent'), related_name='children', blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey('EventCategory', verbose_name=_('category'), related_name='events', blank=True, null=True, on_delete=models.SET_NULL)
 
@@ -266,7 +266,7 @@ class EventLocation(Slugged):
         super(EventLocation, self).save()
 
     def __str__(self):
-        return str(self.title + " - " + self.room)    
+        return str(self.title + " - " + self.room)
 
     @models.permalink
     def get_absolute_url(self):
