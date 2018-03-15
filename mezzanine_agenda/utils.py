@@ -36,9 +36,8 @@ def get_events_list_days_form(locations=[]):
             events_filtred[event.start.strftime('%Y-%m-%d')] = event.start
             for period in event.periods.all():
                 events_filtred[period.date_from.strftime('%Y-%m-%d')] = period.date_from    
-
     # Create range of days between the earliest and oldest event
-    day_list = pd.date_range(events_all_date[min(events_all_date)], events_all_date[max(events_all_date)]).tolist()
+    day_list = pd.date_range(start=events_all_date[min(events_all_date)], end=events_all_date[max(events_all_date)], normalize=True).tolist()
     for a_day in day_list :
         day_dict[a_day.strftime('%Y-%m-%d')] = a_day
 
