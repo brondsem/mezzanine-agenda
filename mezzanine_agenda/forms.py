@@ -178,6 +178,7 @@ class EventFilterForm(EventCalendarForm):
             required=False,
             widget=CustomCheckboxSelectMultiple,
             choices=categorie_manager(event_categories),
+            label=_('Filter Events'),
         )
         self.fields['event_locations_filter'] = forms.MultipleChoiceField(
             required=False,

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-27 17:01+0000\n"
+"POT-Creation-Date: 2018-03-20 10:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -86,150 +86,198 @@ msgstr ""
 msgid "Display or not past events."
 msgstr ""
 
-#: models.py:25
+#: forms.py:181
+msgid "Filter Events"
+msgstr "Filtrer par"
+
+#: models.py:27
 msgid "left"
 msgstr ""
 
-#: models.py:25
+#: models.py:27
 msgid "center"
 msgstr ""
 
-#: models.py:25
+#: models.py:27
 msgid "right"
 msgstr ""
 
-#: models.py:30
+#: models.py:32
 msgid "sub title"
 msgstr ""
 
-#: models.py:41
+#: models.py:43
 msgid "parent"
 msgstr ""
 
-#: models.py:42
+#: models.py:44
 msgid "category"
 msgstr ""
 
-#: models.py:44
+#: models.py:46
 msgid "Start"
 msgstr ""
 
-#: models.py:45
+#: models.py:47
 msgid "End"
 msgstr ""
 
-#: models.py:46
+#: models.py:48
 msgid "Date text"
 msgstr ""
 
-#: models.py:49
+#: models.py:51
 msgid "Facebook ID"
 msgstr ""
 
-#: models.py:50
-msgid "External ID"
-msgstr ""
-
-#: models.py:51
-msgid "Is Full"
+#: models.py:52
+msgid "shop"
 msgstr ""
 
 #: models.py:53
-msgid "brochure"
+msgid "External ID"
 msgstr ""
 
 #: models.py:54
-msgid "prices"
-msgstr ""
-
-#: models.py:55
-msgid "No price comments"
+msgid "Is Full"
 msgstr ""
 
 #: models.py:56
-msgid "mentions"
+msgid "brochure"
+msgstr ""
+
+#: models.py:57
+msgid "prices"
 msgstr ""
 
 #: models.py:58
+msgid "Price comments"
+msgstr ""
+
+#: models.py:59
+msgid "mentions"
+msgstr ""
+
+#: models.py:61
 msgid "Allow comments"
 msgstr ""
 
-#: models.py:59 templates/agenda/event_detail.html:45
+#: models.py:62 templates/agenda/event_detail.html:45
 #: templates/agenda/event_list.html:134
 msgid "Comments"
 msgstr ""
 
-#: models.py:60
+#: models.py:63
 msgid "Rating"
 msgstr ""
 
-#: models.py:61
+#: models.py:64
 msgid "rank"
 msgstr ""
 
-#: models.py:66
+#: models.py:69
 msgid "Event"
 msgstr ""
 
-#: models.py:67 templates/agenda/event_list.html:4
+#: models.py:70 templates/agenda/event_list.html:4
 #: templates/agenda/event_list.html:22
 msgid "Events"
 msgstr ""
 
-#: models.py:182
+#: models.py:222
 msgid "postal code"
 msgstr ""
 
-#: models.py:183
+#: models.py:223
 msgid "city"
 msgstr ""
 
-#: models.py:187
+#: models.py:227
 msgid "room"
 msgstr ""
 
-#: models.py:188 models.py:251
+#: models.py:228 models.py:294 models.py:311
 msgid "description"
 msgstr ""
 
-#: models.py:190
+#: models.py:230
 msgid "external_id"
 msgstr ""
 
-#: models.py:193
+#: models.py:233
 msgid "Event Location"
 msgstr ""
 
-#: models.py:194
+#: models.py:234
 msgid "Event Locations"
 msgstr ""
 
-#: models.py:236
+#: models.py:279
 msgid "value"
 msgstr ""
 
-#: models.py:237
+#: models.py:280
 msgid "Unit"
 msgstr ""
 
-#: models.py:240
+#: models.py:283
 msgid "Event price"
 msgstr ""
 
-#: models.py:241
-msgid "Event pricies"
+#: models.py:284
+msgid "Event prices"
 msgstr ""
 
-#: models.py:250
+#: models.py:293 models.py:310 models.py:326
 msgid "name"
 msgstr ""
 
-#: models.py:254
+#: models.py:297
 msgid "Event category"
 msgstr ""
 
-#: models.py:255
+#: models.py:298
 msgid "Event categories"
+msgstr ""
+
+#: models.py:312
+msgid "Item URL"
+msgstr ""
+
+#: models.py:313
+msgid "Pass URL"
+msgstr ""
+
+#: models.py:314
+msgid "Confirmation URL"
+msgstr ""
+
+#: models.py:317
+msgid "Event shop"
+msgstr ""
+
+#: models.py:318
+msgid "Event shops"
+msgstr ""
+
+#: models.py:327
+msgid "start"
+msgstr ""
+
+#: models.py:328
+msgid "end"
+msgstr ""
+
+#: models.py:340
+msgid "This season already exists."
+msgstr ""
+
+#: models.py:344
+msgid "Season"
+msgstr ""
+
+#: models.py:345
+msgid "Seasons"
 msgstr ""
 
 #: templates/agenda/event_detail.html:31 templates/agenda/event_list.html:90
