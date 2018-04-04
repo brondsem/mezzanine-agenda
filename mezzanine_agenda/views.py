@@ -86,8 +86,8 @@ class EventListView(ListView):
             self.tag = get_object_or_404(Keyword, slug=self.tag)
             events = events.filter(keywords__keyword=self.tag)
         else:
-            for exclude_tag_slug in settings.EVENT_EXCLUDE_TAG_LIST:
-                exclude_tag = get_object_or_404(Keyword, slug=exclude_tag_slug)
+            for exclude_tag_id in settings.EVENT_EXCLUDE_TAG_LIST:
+                exclude_tag = get_object_or_404(Keyword, id=exclude_tag_id)
                 events = events.exclude(keywords__keyword=exclude_tag)
 
         # if not day:
