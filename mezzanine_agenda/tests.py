@@ -8,7 +8,7 @@ except ImportError:
 from datetime import datetime, timedelta
 
 from django.core.urlresolvers import reverse
-from django.utils.unittest import skipUnless
+from unittest import skipUnless
 
 from mezzanine_agenda.models import Event, EventLocation
 from mezzanine.conf import settings
