@@ -79,7 +79,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
         if self.end and self.start > self.end:
             raise ValidationError("Start must be sooner than end.")
 
-    def save(self):
+    def save(self, **kwargs):
         super(Event, self).save()
         # take some values from parent
         if not self.parent is None:
@@ -266,7 +266,7 @@ class EventLocation(Slugged):
         super(EventLocation, self).save()
 
     def __str__(self):
-        return str(self.title + " - " + self.room)    
+        return str(self.title + " - " + self.room)
 
     @models.permalink
     def get_absolute_url(self):
