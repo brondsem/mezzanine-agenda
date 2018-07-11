@@ -126,6 +126,8 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
                     link.save()
         super(Event, self).save(*args, **kwargs)
 
+    def update(self, *args, **kwargs):
+        super(Event, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         """
