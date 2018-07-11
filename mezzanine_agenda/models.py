@@ -39,7 +39,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     """
     An event.
     """
-
+    
     parent = models.ForeignKey('Event', verbose_name=_('parent'), related_name='children', blank=True, null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey('EventCategory', verbose_name=_('category'), related_name='events', blank=True, null=True, on_delete=models.SET_NULL)
 
@@ -79,8 +79,8 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
         if self.end and self.start > self.end:
             raise ValidationError("Start must be sooner than end.")
 
-    def save(self, **kwargs):
-        super(Event, self).save()
+    def save(self, *args, **kwargs):
+        super(Event, self).save(*args, **kwargs)
         # take some values from parent
         if not self.parent is None:
             self.title = self.parent.title
@@ -124,7 +124,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
                     link.save()
                     link.event = self
                     link.save()
-        super(Event, self).save()
+        super(Event, self).save(*args, **kwargs)
 
 
     def get_absolute_url(self):
