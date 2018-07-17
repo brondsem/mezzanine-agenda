@@ -151,8 +151,11 @@ class EventListView(ListView):
             self.templates.append(u"agenda/event_list_%s.html" % self.username)
 
         if not self.year and not self.location and not self.username:
-            #Get upcoming events/ongoing events
-            events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now()))
+            #Get upcoming events/ongoing events or all events
+            today = date.today()
+            season = Season.objects.filter(start__year=today.year).first()
+            if season.start <= today and today <= season.end :
+                events = events.filter(Q(start__gt=datetime.now()) | Q(end__gt=datetime.now()))
 
         self.templates.append(self.template_name)
         return events
