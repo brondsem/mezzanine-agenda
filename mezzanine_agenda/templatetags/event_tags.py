@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
 
 from django import template
@@ -19,6 +21,7 @@ from mezzanine.pages.models import Page
 from mezzanine.template import Library
 from mezzanine.utils.models import get_user_model
 from mezzanine.utils.sites import current_site_id
+from mezzanine_agenda.utils import sign_url
 
 import pytz
 
@@ -223,7 +226,11 @@ def google_static_map(obj, width, height, zoom):
         scale = 2
     else:
         scale = 1
-    return mark_safe("<img src='//maps.googleapis.com/maps/api/staticmap?size={width}x{height}&scale={scale}&format=png&markers={marker}&sensor=false&zoom={zoom}' width='{width}' height='{height}' />".format(**locals()))
+    key = settings.GOOGLE_STATIC_MAPS_API_KEY
+    url = "https://maps.googleapis.com/maps/api/staticmap?size={width}x{height}&scale={scale}&format=png&markers={marker}&sensor=false&zoom={zoom}&key={key}".format(**locals()).encode('utf-8')
+    url = sign_url(input_url=url, secret=settings.GOOGLE_STATIC_MAPS_API_SECRET)
+
+    return mark_safe("<img src='{url}' width='{width}' height='{height}' />".format(**locals()))
 
 
 @register.simple_tag(takes_context=True)
