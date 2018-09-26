@@ -226,7 +226,7 @@ def google_static_map(obj, width, height, zoom):
         scale = 2
     else:
         scale = 1
-    key = settings.GOOGLE_STATIC_MAPS_API_KEY
+    key = settings.GOOGLE_API_KEY
     url = "https://maps.googleapis.com/maps/api/staticmap?size={width}x{height}&scale={scale}&format=png&markers={marker}&sensor=false&zoom={zoom}&key={key}".format(**locals()).encode('utf-8')
     url = sign_url(input_url=url, secret=settings.GOOGLE_STATIC_MAPS_API_SECRET)
 
