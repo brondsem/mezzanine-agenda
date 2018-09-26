@@ -68,7 +68,7 @@ class Event(Displayable, SubTitle, Ownable, RichText, AdminThumbMixin):
     class Meta:
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
-        ordering = ("-start", "rank")
+        ordering = ("rank", "start",)
 
     def clean(self):
         """

@@ -147,7 +147,7 @@ class EventListView(ListView):
 
         context['filter_form'] = EventFilterForm(initial=self.form_initial)
         if settings.PAST_EVENTS:
-            context['past_events'] = Event.objects.filter(end__lt=datetime.now()).order_by("-start")
+            context['past_events'] = Event.objects.filter(end__lt=datetime.now()).order_by("start")
 
         return context
 
