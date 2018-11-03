@@ -8,6 +8,7 @@ def get_long_desc():
         return subprocess.check_output(['pandoc', '-f', 'markdown', '-t', 'rst', 'README.mdown'])
     except:
         print("WARNING: The long readme wasn't converted properly")
+        return b''
 
 long_desc = get_long_desc()
 
